@@ -175,7 +175,7 @@ function connect(url) {
   console.log('  exercise: ' + await evalJs(
     `document.getElementById('ex-name').textContent + ' | ' + document.getElementById('ex-cue').textContent +
      ' | clock ' + document.getElementById('clock').textContent +
-     ' | ring ' + document.getElementById('ring-fg').getAttribute('stroke-dashoffset')`));
+     ' | ring ' + getComputedStyle(document.getElementById('ring-fg')).strokeDashoffset`));
 
   /* Confirm the figure is redrawing. Sample the limb geometry, not the spine:
    * plenty of exercises (punches, curls, raises) hold the torso still by
@@ -183,10 +183,60 @@ function connect(url) {
   const limbs = () => evalJs(
     `Array.prototype.map.call(document.querySelectorAll('#figwrap .fx-limb'),
        function(n){ return n.getAttribute('points'); }).join('|')`);
-  const seenLimbs = new Set();
-  for (let i = 0; i < 6; i++) { seenLimbs.add(await limbs()); await sleep(180); }
+
+  /* getComputedStyle, never getAttribute: reading back an attribute only proves
+   * we wrote it, and any CSS rule naming the same property beats a presentation
+   * attribute. That exact gap once let a frozen progress ring pass this check. */
+  const ringOffset = () => evalJs(
+    `getComputedStyle(document.getElementById('ring-fg')).strokeDashoffset`);
+
+  const seenLimbs = new Set(), seenRing = new Set();
+  for (let i = 0; i < 6; i++) {
+    seenLimbs.add(await limbs());
+    seenRing.add(await ringOffset());
+    await sleep(180);
+  }
   if (seenLimbs.size < 4) problems.push(`figure barely animating: ${seenLimbs.size} distinct poses in 6 samples`);
   else console.log(`  figure animating (${seenLimbs.size}/6 distinct limb poses)`);
+
+  if (seenRing.size < 4) {
+    problems.push(`progress ring not advancing: only ${seenRing.size} distinct computed ` +
+      `stroke-dashoffset values in 6 samples (${[...seenRing].join(', ')})`);
+  } else {
+    console.log(`  ring draining (${seenRing.size}/6 distinct computed offsets)`);
+  }
+
+  /* The dash pattern must also survive to the computed style, or the ring renders
+   * as a solid circle that never appears to empty. */
+  const dash = await evalJs(
+    `getComputedStyle(document.getElementById('ring-fg')).strokeDasharray`);
+  if (!dash || dash === 'none') problems.push(`ring stroke-dasharray did not apply (got "${dash}")`);
+  else console.log(`  ring dash pattern: ${dash}`);
+
+  /* Sit through the first move to catch the change-position gap and confirm the
+   * ring resets for the move that follows. */
+  let sawTransition = false, firstMove = await evalJs(`document.getElementById('ex-name').textContent`);
+  for (let i = 0; i < 75 && !sawTransition; i++) {
+    const name = await evalJs(`document.getElementById('ex-name').textContent`);
+    if (name === 'Change Position') {
+      sawTransition = true;
+      await shot('09-transition');
+      console.log(`  transition reached after "${firstMove}" — badge: ` +
+        await evalJs(`document.getElementById('stage-badge').textContent + ' / ' +
+                      document.getElementById('ex-cue').textContent`));
+    }
+    await sleep(1000);
+  }
+  if (!sawTransition) problems.push('never reached a change-position gap within 75s of the first move');
+  else {
+    await sleep(6000);
+    const after = await evalJs(
+      `document.getElementById('ex-name').textContent + '|' +
+       getComputedStyle(document.getElementById('ring-fg')).strokeDashoffset`);
+    const [nm, off] = after.split('|');
+    console.log(`  next move: ${nm}, ring reset to offset ${off}`);
+    if (nm === 'Change Position') problems.push('still showing the transition 6s later');
+  }
 
   /* ---- pause overlay ---- */
   await evalJs(`document.getElementById('tapzone').click()`);

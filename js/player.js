@@ -216,6 +216,10 @@
       } else if (item.kind === 'rest') {
         this.audio.rest();
         if (item.next) this.audio.say('Rest. Next, ' + item.next);
+      } else if (item.kind === 'transition') {
+        /* Only a few seconds long, so no tone here — the 3-2-1 ticks and the
+         * next move's start tone are already enough sound for the gap. */
+        if (item.next) this.audio.say(item.next);
       } else if (item.kind === 'ready') {
         this.audio.say('Get ready. ' + (item.next || ''));
       }

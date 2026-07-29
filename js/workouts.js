@@ -38,9 +38,20 @@
 
   /* ---------- templates ---------- */
 
+  var TRANSITION = 5;
+
   function rep(n, fn) { var a = [], i; for (i = 0; i < n; i++) a = a.concat(fn(i)); return a; }
-  function flow(groups, dur) {
-    return groups.map(function (g) { return { group: g, work: dur, kind: 'work' }; });
+
+  /* Stretch runs as a continuous flow: no rest, but a short gap after each move
+   * to change position. Duration is left unset so each exercise contributes its
+   * own dose — ballistic moves are shorter than held ones. */
+  function flow(groups) {
+    var out = [];
+    groups.forEach(function (g) {
+      out.push({ group: g, kind: 'work' });
+      out.push({ kind: 'transition', work: TRANSITION });
+    });
+    return out;
   }
   function circuit(groups, work, rest, roundRest) {
     var out = [];
@@ -52,24 +63,45 @@
   }
 
   var TEMPLATES = {
+    /* 24 moves per session, each drawing its own duration from the exercise.
+     * Slot counts stay inside what each group can supply (hips 16, spine 14,
+     * shoulders 14, hams 9, ankles 5) so a session never has to repeat a move. */
     stretch: [
       { name: 'Full-Body Flow', build: function () {
-        return rep(2, function () { return flow(['spine', 'shoulders', 'hips', 'hams', 'hips', 'spine', 'ankles', 'full'], 74); });
+        return flow(['shoulders', 'spine', 'shoulders', 'hips', 'hams', 'ankles',
+                     'spine', 'shoulders', 'hips', 'hams', 'hips', 'ankles',
+                     'spine', 'spine', 'hips', 'hams', 'shoulders', 'hips',
+                     'spine', 'hips', 'hams', 'ankles', 'spine', 'shoulders']);
       } },
       { name: 'Hips & Hamstrings', build: function () {
-        return rep(2, function () { return flow(['hips', 'hams', 'hips', 'ankles', 'hams', 'hips', 'spine'], 84); });
+        return flow(['hips', 'hams', 'hips', 'ankles', 'hams', 'hips',
+                     'spine', 'hips', 'hams', 'hips', 'ankles', 'hams',
+                     'hips', 'hips', 'hams', 'spine', 'hips', 'hams',
+                     'hips', 'ankles', 'hams', 'hips', 'spine', 'hips']);
       } },
       { name: 'Spine & Shoulders', build: function () {
-        return rep(2, function () { return flow(['spine', 'shoulders', 'spine', 'shoulders', 'hips', 'spine', 'full'], 84); });
+        return flow(['shoulders', 'spine', 'shoulders', 'spine', 'hips', 'shoulders',
+                     'spine', 'shoulders', 'spine', 'hams', 'shoulders', 'spine',
+                     'shoulders', 'spine', 'hips', 'shoulders', 'spine', 'shoulders',
+                     'spine', 'hams', 'shoulders', 'spine', 'hips', 'shoulders']);
       } },
       { name: 'Ground Flow', build: function () {
-        return rep(2, function () { return flow(['spine', 'core', 'spine', 'hips', 'shoulders', 'hams', 'spine'], 84); });
+        return flow(['spine', 'spine', 'spine', 'hips', 'shoulders', 'hams',
+                     'spine', 'hips', 'hips', 'spine', 'shoulders', 'hips',
+                     'spine', 'hams', 'hips', 'spine', 'shoulders', 'hips',
+                     'spine', 'hips', 'hams', 'spine', 'shoulders', 'hips']);
       } },
       { name: 'Long & Loose', build: function () {
-        return flow(['spine', 'shoulders', 'hips', 'hams', 'ankles', 'spine', 'hips', 'shoulders', 'hams', 'full', 'spine', 'hips', 'ankles', 'spine'], 84);
+        return flow(['shoulders', 'spine', 'hips', 'hams', 'ankles', 'spine',
+                     'hips', 'shoulders', 'hams', 'hips', 'spine', 'shoulders',
+                     'hips', 'ankles', 'hams', 'spine', 'shoulders', 'hips',
+                     'hams', 'spine', 'shoulders', 'hips', 'spine', 'hips']);
       } },
       { name: 'Joints & Ranges', build: function () {
-        return rep(2, function () { return flow(['ankles', 'hips', 'spine', 'shoulders', 'hams', 'hips', 'shoulders'], 84); });
+        return flow(['ankles', 'shoulders', 'hips', 'spine', 'shoulders', 'ankles',
+                     'hips', 'shoulders', 'spine', 'hams', 'ankles', 'shoulders',
+                     'hips', 'spine', 'shoulders', 'hams', 'hips', 'hams',
+                     'shoulders', 'spine', 'shoulders', 'hips', 'spine', 'hips']);
       } }
     ],
 
@@ -171,9 +203,25 @@
   }
 
   /* Pick from candidates, freshest first, with a seeded shuffle among the top
-   * tier so the same "least used" exercise doesn't always win. */
-  function choose(cands, usage, used, rand) {
-    var pool = cands.filter(function (e) { return used.indexOf(e.id) === -1; });
+   * tier so the same "least used" exercise doesn't always win.
+   *
+   * Thin groups (only a couple of exercises tagged `carry`, or `arms` with no
+   * equipment on hand) exhaust before a circuit's slots are filled, so there is
+   * a fallback. It must still refuse the exercise that just ran: repeating a
+   * move across a single rest reads as a bug, where repeating it later in the
+   * session is simply another round. */
+  function choose(cands, allCands, usage, used, rand, lastId) {
+    var fresh = function (e) { return used.indexOf(e.id) === -1; };
+    var notLast = function (e) { return e.id !== lastId; };
+
+    var pool = cands.filter(function (e) { return fresh(e) && notLast(e); });
+    if (!pool.length) pool = cands.filter(notLast);
+    /* A group can be down to a single candidate — at level 1 with no equipment,
+     * only one bodyweight move carries the `shoulders` tag. Rather than run it
+     * twice in a row, step outside the group; a slightly off-target exercise
+     * beats a visible repeat. */
+    if (!pool.length) pool = allCands.filter(function (e) { return fresh(e) && notLast(e); });
+    if (!pool.length) pool = allCands.filter(notLast);
     if (!pool.length) pool = cands.slice();
     if (!pool.length) return null;
 
@@ -210,8 +258,11 @@
       }
     }
 
+    /* Rest is the most elastic, then work. Transitions are adjusted last so the
+     * change-position gap stays the length it was designed to be. */
     spread(function (it) { return it.kind === 'rest'; }, 8, 60);
     spread(function (it) { return it.kind === 'work' && !it.lock; }, 18, 95);
+    spread(function (it) { return it.kind === 'transition'; }, 4, 9);
 
     var left = target - sum();
     if (left > 0) items.push({ kind: 'rest', dur: left, name: 'Breathe', cue: 'Session done in a moment — shake it out' });
@@ -240,7 +291,7 @@
 
     var cands = available(session, equip, level);
     var rand = mulberry32(hash(session + '|' + template.name + '|' + count + '|' + equip.join(',')));
-    var used = [], items = [], lastPick = null;
+    var used = [], items = [], lastPick = null, lastId = null;
 
     items.push({ kind: 'ready', dur: READY, name: 'Get Ready', cue: 'First move coming up' });
 
@@ -250,23 +301,31 @@
         items.push({ kind: 'rest', dur: s.work, name: 'Rest', cue: 'Breathe — next one is coming' });
         continue;
       }
+      if (s.kind === 'transition') {
+        items.push({ kind: 'transition', dur: s.work, name: 'Change Position' });
+        continue;
+      }
       var pick;
       if (s.lock && lastPick && lastPick.group === s.group) {
         pick = lastPick.ex;                       // tabata: same move all 8 intervals
       } else {
         var groupCands = cands.filter(function (e) { return e.groups.indexOf(s.group) !== -1; });
         if (!groupCands.length) groupCands = cands;
-        pick = choose(groupCands, usage, used, rand);
+        pick = choose(groupCands, cands, usage, used, rand, lastId);
         if (!pick) continue;
         used.push(pick.id);
         if (used.length > Math.max(4, cands.length - 2)) used.shift();
         lastPick = { group: s.group, ex: pick };
       }
+      lastId = pick.id;
       items.push({
-        kind: 'work', dur: s.work, exId: pick.id, name: pick.name,
-        cue: pick.cue, alt: !!pick.alt, props: pick.props || []
+        kind: 'work', dur: s.work || pick.dose || 45, exId: pick.id, name: pick.name,
+        cue: pick.cue, alt: !!pick.alt, props: pick.props || [], lock: !!s.lock
       });
     }
+
+    /* A flow ends on a move, not on a gap. */
+    while (items.length && items[items.length - 1].kind === 'transition') items.pop();
 
     fit(items, SESSION_LEN);
 

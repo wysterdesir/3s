@@ -110,8 +110,15 @@
   audio.on = S.sound;
   audio.voice = S.voice;
 
+  /* Inline style, not setAttribute: presentation attributes lose to any CSS rule
+   * that names the same property, which would freeze the ring silently. */
   var RING_C = 2 * Math.PI * 139;
-  $('ring-fg').setAttribute('stroke-dasharray', RING_C.toFixed(1));
+  var ringFg = $('ring-fg');
+  ringFg.style.strokeDasharray = RING_C.toFixed(1);
+
+  function setRing(frac) {
+    ringFg.style.strokeDashoffset = (RING_C * Math.max(0, Math.min(1, frac))).toFixed(1);
+  }
 
   var run = null;    // { plan, sessions, idx, single }
   var player = new global.S3.player.Player({
@@ -134,6 +141,7 @@
       $('ex-cue').textContent = nx ? 'Next: ' + nx.name : 'Session complete';
       $('nextup').textContent = nx ? nx.cue : '';
       $('stage-badge').classList.toggle('is-on', !!nx);
+      $('stage-badge').textContent = item.kind === 'transition' ? 'Get set' : 'Next up';
     }
   }
 
@@ -148,7 +156,7 @@
 
   function onTick(t) {
     $('clock').textContent = mmss(t.remaining);
-    $('ring-fg').setAttribute('stroke-dashoffset', (RING_C * t.itemFrac).toFixed(1));
+    setRing(t.itemFrac);
     $('sessbar-fill').style.width = (t.sessionFrac * 100).toFixed(2) + '%';
   }
 
@@ -188,7 +196,7 @@
     $('sess-tmpl').textContent = plan.template;
     $('clock').textContent = mmss(plan.length);
     $('sessbar-fill').style.width = '0%';
-    $('ring-fg').setAttribute('stroke-dashoffset', '0');
+    setRing(0);
 
     player.load(plan);
     go('play');

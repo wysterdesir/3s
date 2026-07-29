@@ -174,21 +174,23 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 }
 
 .ring { position: absolute; width: min(94vw, 74vh, 430px); height: min(94vw, 74vh, 430px); transform: rotate(-90deg); }
-.ring circle { fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.ring circle { fill: none; stroke-width: 3.4; stroke-linecap: round; }
 .ring-bg { stroke: #1b1f27; }
+/* Deliberately no stroke-dasharray/dashoffset here: a CSS declaration outranks
+ * an SVG presentation attribute, so declaring them would silently override the
+ * per-frame updates app.js makes. It sets them as inline style instead. */
 .ring-fg {
   stroke: var(--accent);
-  stroke-dasharray: 873.2;
-  stroke-dashoffset: 0;
   transition: stroke .3s ease;
 }
 
 .figwrap {
   position: relative; z-index: 2;
-  /* Held at ~92.5% of .ring below, which is the ratio between the ring circle
-   * (r=139 of a 300 viewBox) and the ring element. That lands the figure's
-   * content circle exactly on the ring stroke — biggest figure, no crossing. */
-  width: min(87vw, 68vh, 396px); height: min(87vw, 68vh, 396px);
+  /* Just inside .ring below — the ratio between the ring circle (r=139 of a 300
+   * viewBox) and the ring element, minus a couple of percent so the widest pose
+   * clears the stroke rather than grazing it. Verified by the ring-fit check in
+   * tools/shoot.js, which wants a few px of margin, not a tie. */
+  width: min(85vw, 66vh, 386px); height: min(85vw, 66vh, 386px);
   display: flex; align-items: center; justify-content: center;
 }
 .figure { width: 100%; height: 100%; overflow: visible; }

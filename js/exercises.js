@@ -9,6 +9,8 @@
  *   tier    1 easiest .. 3 hardest (used for gradual progression)
  *   cue     one short coaching line shown under the name
  *   cycle   seconds for one full rep loop
+ *   dose    stretch only: target seconds for the move (40 ballistic, 48 flow,
+ *           56 held). The generator trims a few seconds to hit 20:00 exactly.
  *   frames  closed keyframe loop; last frame interpolates back to the first
  *   alt     true if the exercise switches sides halfway through the interval
  *   props   fixtures/implements drawn with the figure
@@ -105,125 +107,206 @@
 
     /* ============ STRETCH — dynamic mobility ============ */
 
-    { id: 'neck-rolls', name: 'Neck Rolls', pool: 'stretch', groups: ['spine', 'shoulders'], equip: [], tier: 1,
+    { id: 'neck-rolls', name: 'Neck Rolls', pool: 'stretch', groups: ['spine', 'shoulders'], equip: [], tier: 1, dose: 40,
       cue: 'Slow half-circles, chin to chest', cycle: 5,
       frames: [P(STAND, HANDS_HIP, { head: -26 }), P(STAND, HANDS_HIP, { head: 4 }), P(STAND, HANDS_HIP, { head: -26, torso: 88 })] },
 
-    { id: 'shoulder-rolls', name: 'Shoulder Rolls', pool: 'stretch', groups: ['shoulders'], equip: [], tier: 1,
+    { id: 'shoulder-rolls', name: 'Shoulder Rolls', pool: 'stretch', groups: ['shoulders'], equip: [], tier: 1, dose: 40,
       cue: 'Big circles back, chest opens', cycle: 3.4,
       frames: [P(STAND, { handL: [110, 120], handR: [130, 120] }), P(STAND, { handL: [108, 110], handR: [132, 110] }),
                P(STAND, { handL: [114, 108], handR: [126, 108], elbowL: 1, elbowR: 1 })] },
 
-    { id: 'arm-circles', name: 'Arm Circles', pool: 'stretch', groups: ['shoulders'], equip: [], tier: 1,
+    { id: 'arm-circles', name: 'Arm Circles', pool: 'stretch', groups: ['shoulders'], equip: [], tier: 1, dose: 40,
       cue: 'Reach long, shoulders loose', cycle: 3.2,
       frames: [P(STAND, ARMS_SIDE), P(STAND, ARMS_UP), P(STAND, { handL: [96, 132], handR: [144, 132] })] },
 
-    { id: 'arm-swings', name: 'Cross-Body Arm Swings', pool: 'stretch', groups: ['shoulders'], equip: [], tier: 1,
+    { id: 'arm-swings', name: 'Cross-Body Arm Swings', pool: 'stretch', groups: ['shoulders'], equip: [], tier: 1, dose: 40,
       cue: 'Wrap then open wide', cycle: 2.6,
       frames: [P(STAND, { handL: [148, 108], handR: [152, 116] }), P(STAND, { handL: [88, 100], handR: [154, 104] })] },
 
-    { id: 'torso-twist', name: 'Standing Torso Twists', pool: 'stretch', groups: ['spine'], equip: [], tier: 1,
+    { id: 'torso-twist', name: 'Standing Torso Twists', pool: 'stretch', groups: ['spine'], equip: [], tier: 1, dose: 40,
       cue: 'Hips stay square, let arms follow', cycle: 3,
       frames: [P(WIDE, { handL: [92, 104], handR: [146, 116] }), P(WIDE, { handL: [148, 112], handR: [154, 104] })] },
 
-    { id: 'side-bend', name: 'Overhead Side Bends', pool: 'stretch', groups: ['spine'], equip: [], tier: 1, alt: true,
+    { id: 'side-bend', name: 'Overhead Side Bends', pool: 'stretch', groups: ['spine'], equip: [], tier: 1, dose: 56, alt: true,
       cue: 'Reach over, feel the ribs open', cycle: 4,
       frames: [P(WIDE, { torso: 74, handL: [148, 52], handR: [154, 60], head: 8 }),
                P(WIDE, ARMS_UP), P(WIDE, { torso: 104, handL: [88, 56], handR: [96, 50], head: -8 })] },
 
-    { id: 'cat-cow', name: 'Cat-Cow', pool: 'stretch', groups: ['spine'], equip: [], tier: 1,
+    { id: 'cat-cow', name: 'Cat-Cow', pool: 'stretch', groups: ['spine'], equip: [], tier: 1, dose: 48,
       cue: 'Round up on exhale, open on inhale', cycle: 5,
       frames: [CAT, COW] },
 
-    { id: 'thread-needle', name: 'Thread the Needle', pool: 'stretch', groups: ['spine', 'shoulders'], equip: [], tier: 1, alt: true,
+    { id: 'thread-needle', name: 'Thread the Needle', pool: 'stretch', groups: ['spine', 'shoulders'], equip: [], tier: 1, dose: 48, alt: true,
       cue: 'Slide the arm through, drop the shoulder', cycle: 5,
       frames: [QUAD_ALL4, P(QUAD_ALL4, { torso: 14, handR: [104, 176], handL: [150, 178], head: -20, arch: 4 })] },
 
-    { id: 'bird-dog', name: 'Bird Dog', pool: 'stretch', groups: ['spine', 'core'], equip: [], tier: 1, alt: true,
+    { id: 'bird-dog', name: 'Bird Dog', pool: 'stretch', groups: ['spine', 'core'], equip: [], tier: 1, dose: 48, alt: true,
       cue: 'Long line, no wobble', cycle: 5,
       frames: [QUAD_ALL4, P(QUAD_ALL4, { footL: [46, 138], handR: [176, 132], arch: -4, head: 2 })] },
 
-    { id: 'hip-circles', name: 'Standing Hip Circles', pool: 'stretch', groups: ['hips'], equip: [], tier: 1, alt: true,
+    { id: 'hip-circles', name: 'Standing Hip Circles', pool: 'stretch', groups: ['hips'], equip: [], tier: 1, dose: 40, alt: true,
       cue: 'Knee up, draw a big circle', cycle: 4.5,
       frames: [P(NARROW, HANDS_HIP, { footR: [140, 128] }), P(NARROW, HANDS_HIP, { footR: [152, 146], kneeR: 1 }),
                P(NARROW, HANDS_HIP, { footR: [126, 150] })] },
 
-    { id: 'leg-swings-fb', name: 'Leg Swings — Front to Back', pool: 'stretch', groups: ['hips', 'hams'], equip: [], tier: 1, alt: true,
+    { id: 'leg-swings-fb', name: 'Leg Swings — Front to Back', pool: 'stretch', groups: ['hips', 'hams'], equip: [], tier: 1, dose: 40, alt: true,
       cue: 'Relaxed pendulum, tall chest', cycle: 2.6,
       frames: [P(NARROW, HANDS_HIP, { footR: [166, 142] }), P(NARROW, HANDS_HIP, { footR: [92, 158], kneeR: -1 })] },
 
-    { id: 'leg-swings-side', name: 'Leg Swings — Side to Side', pool: 'stretch', groups: ['hips'], equip: [], tier: 1, alt: true,
+    { id: 'leg-swings-side', name: 'Leg Swings — Side to Side', pool: 'stretch', groups: ['hips'], equip: [], tier: 1, dose: 40, alt: true,
       cue: 'Sweep across the body and out', cycle: 2.8,
       frames: [P(NARROW, ARMS_SIDE, { footR: [96, 160] }), P(NARROW, ARMS_SIDE, { footR: [162, 156] })] },
 
-    { id: 'knee-hugs', name: 'Walking Knee Hugs', pool: 'stretch', groups: ['hips'], equip: [], tier: 1,
+    { id: 'knee-hugs', name: 'Walking Knee Hugs', pool: 'stretch', groups: ['hips'], equip: [], tier: 1, dose: 40,
       cue: 'Hug the knee in, stand tall', cycle: 3.6,
       frames: [P(NARROW, { footR: [136, 122], handR: [140, 128], handL: [134, 120] }), STAND,
                P(NARROW, { footL: [136, 122], handL: [140, 128], handR: [134, 120] })] },
 
-    { id: 'quad-pull', name: 'Standing Quad Pull', pool: 'stretch', groups: ['hips'], equip: [], tier: 1, alt: true,
+    { id: 'quad-pull', name: 'Standing Quad Pull', pool: 'stretch', groups: ['hips'], equip: [], tier: 1, dose: 56, alt: true,
       cue: 'Heel to glute, knee points down', cycle: 4,
       frames: [P(NARROW, { footR: [98, 123], handR: [102, 132], handL: [124, 116], kneeR: 1 }),
                P(NARROW, { footR: [96, 118], handR: [100, 128], handL: [124, 116], kneeR: 1 })] },
 
-    { id: 'hamstring-sweep', name: 'Hamstring Sweeps', pool: 'stretch', groups: ['hams'], equip: [], tier: 1,
+    { id: 'hamstring-sweep', name: 'Hamstring Sweeps', pool: 'stretch', groups: ['hams'], equip: [], tier: 1, dose: 40,
       cue: 'Hinge back, sweep the floor', cycle: 4,
       frames: [HINGE_LOW, P(STAND, { handL: [110, 96], handR: [130, 96] })] },
 
-    { id: 'inchworm', name: 'Inchworm', pool: 'stretch', groups: ['hams', 'full'], equip: [], tier: 2,
+    { id: 'inchworm', name: 'Inchworm', pool: 'stretch', groups: ['hams', 'full'], equip: [], tier: 2, dose: 48,
       cue: 'Walk the hands out, then back', cycle: 6,
       frames: [P(STAND, { handL: [110, 130], handR: [126, 130] }), HINGE_LOW, DOWN_DOG, PLANK_HIGH, DOWN_DOG] },
 
-    { id: 'down-dog-cobra', name: 'Down Dog to Cobra', pool: 'stretch', groups: ['spine', 'shoulders', 'hams'], equip: [], tier: 2,
+    { id: 'down-dog-cobra', name: 'Down Dog to Cobra', pool: 'stretch', groups: ['spine', 'shoulders', 'hams'], equip: [], tier: 2, dose: 48,
       cue: 'Press the hips up, then open the chest', cycle: 6,
       frames: [DOWN_DOG, PLANK_HIGH, COBRA, PLANK_HIGH] },
 
-    { id: 'worlds-greatest', name: "World's Greatest Stretch", pool: 'stretch', groups: ['hips', 'spine'], equip: [], tier: 2, alt: true,
+    { id: 'worlds-greatest', name: "World's Greatest Stretch", pool: 'stretch', groups: ['hips', 'spine'], equip: [], tier: 2, dose: 48, alt: true,
       cue: 'Deep lunge, then reach for the ceiling', cycle: 6,
       frames: [P(LUNGE_DOWN, { hip: [112, 150], handL: [138, 178], handR: [144, 178], torso: 62, head: -14 }),
                P(LUNGE_DOWN, { hip: [112, 150], torso: 74, handL: [140, 178], handR: [128, 78], head: 12 })] },
 
-    { id: 'lunge-reach', name: 'Lunge with Overhead Reach', pool: 'stretch', groups: ['hips'], equip: [], tier: 1, alt: true,
+    { id: 'lunge-reach', name: 'Lunge with Overhead Reach', pool: 'stretch', groups: ['hips'], equip: [], tier: 1, dose: 48, alt: true,
       cue: 'Sink the hips, reach tall', cycle: 5,
       frames: [P(LUNGE_DOWN, { handL: [112, 40], handR: [126, 38], torso: 92 }), P(STAND, ARMS_UP)] },
 
-    { id: 'frog-rocks', name: 'Frog Rocks', pool: 'stretch', groups: ['hips'], equip: [], tier: 2,
+    { id: 'frog-rocks', name: 'Frog Rocks', pool: 'stretch', groups: ['hips'], equip: [], tier: 2, dose: 48,
       cue: 'Rock back into the hips, easy breath', cycle: 4.5,
       frames: [P(QUAD_ALL4, { hip: [110, 150], footL: [72, 178], footR: [80, 178] }),
                P(QUAD_ALL4, { hip: [88, 156], footL: [62, 178], footR: [70, 178], arch: 5, head: -10 })] },
 
-    { id: 'deep-squat-hold', name: 'Deep Squat Hold', pool: 'stretch', groups: ['hips', 'ankles'], equip: [], tier: 2,
+    { id: 'deep-squat-hold', name: 'Deep Squat Hold', pool: 'stretch', groups: ['hips', 'ankles'], equip: [], tier: 2, dose: 56,
       cue: 'Elbows inside the knees, pry them open', cycle: 5,
       frames: [SQUAT_DEEP, P(SQUAT_DEEP, { hip: [110, 152], torso: 66 })] },
 
-    { id: 'glute-bridge-mob', name: 'Glute Bridge', pool: 'stretch', groups: ['hips', 'core'], equip: [], tier: 1,
+    { id: 'glute-bridge-mob', name: 'Glute Bridge', pool: 'stretch', groups: ['hips', 'core'], equip: [], tier: 1, dose: 48,
       cue: 'Squeeze at the top, ribs down', cycle: 4,
       frames: [BRIDGE_DOWN, BRIDGE_UP] },
 
-    { id: 'ankle-rocks', name: 'Ankle Rocks', pool: 'stretch', groups: ['ankles'], equip: [], tier: 1, alt: true,
+    { id: 'ankle-rocks', name: 'Ankle Rocks', pool: 'stretch', groups: ['ankles'], equip: [], tier: 1, dose: 40, alt: true,
       cue: 'Drive the knee forward, heel stays down', cycle: 3,
       frames: [P(LUNGE_SHALLOW, { hip: [114, 132], footR: [146, 178] }), P(LUNGE_SHALLOW, { hip: [122, 130], footR: [146, 178] })] },
 
-    { id: 'calf-bounce', name: 'Calf Bounces', pool: 'stretch', groups: ['ankles'], equip: [], tier: 1,
+    { id: 'calf-bounce', name: 'Calf Bounces', pool: 'stretch', groups: ['ankles'], equip: [], tier: 1, dose: 40,
       cue: 'Springy heels, stay light', cycle: 1.4,
       frames: [P(NARROW, HANDS_HIP), P(NARROW, HANDS_HIP, { hip: [120, 106], footL: [117, 174], footR: [123, 174] })] },
 
-    { id: 'wall-angels', name: 'Wall Angels', pool: 'stretch', groups: ['shoulders'], equip: ['wall'], tier: 1, props: ['wall'],
+    { id: 'wall-angels', name: 'Wall Angels', pool: 'stretch', groups: ['shoulders'], equip: ['wall'], tier: 1, dose: 48, props: ['wall'],
       cue: 'Back flat to the wall, slide up slow', cycle: 5,
       frames: [P(STAND, { hip: [54, 118], footL: [50, 178], footR: [58, 178], handL: [74, 104], handR: [80, 100], elbowL: 1, elbowR: 1 }),
                P(STAND, { hip: [54, 118], footL: [50, 178], footR: [58, 178], handL: [62, 44], handR: [68, 42] })] },
 
-    { id: 'seated-fold', name: 'Seated Forward Fold', pool: 'stretch', groups: ['hams', 'spine'], equip: [], tier: 1,
+    { id: 'seated-fold', name: 'Seated Forward Fold', pool: 'stretch', groups: ['hams', 'spine'], equip: [], tier: 1, dose: 56,
       cue: 'Long spine first, then fold', cycle: 5,
       frames: [P(SEATED_FOLD, { torso: 58, arch: 0, handL: [148, 140], handR: [154, 142] }), SEATED_FOLD] },
 
-    { id: 'child-pose', name: "Child's Pose Reach", pool: 'stretch', groups: ['spine', 'shoulders'], equip: [], tier: 1,
+    { id: 'child-pose', name: "Child's Pose Reach", pool: 'stretch', groups: ['spine', 'shoulders'], equip: [], tier: 1, dose: 56,
       cue: 'Melt the chest down, breathe wide', cycle: 5,
       frames: [CHILD, P(CHILD, { hip: [92, 160], arch: 5 })] },
 
-    { id: 'scap-pushup', name: 'Scapular Push-Ups', pool: 'stretch', groups: ['shoulders'], equip: [], tier: 2,
+    { id: 'scap-pushup', name: 'Scapular Push-Ups', pool: 'stretch', groups: ['shoulders'], equip: [], tier: 2, dose: 40,
       cue: 'Arms stay straight — only the shoulders move', cycle: 3,
       frames: [P(PLANK_HIGH, { arch: 6 }), P(PLANK_HIGH, { arch: -4, hip: [123, 152] })] },
+
+    { id: 'standing-ham-reach', name: 'Standing Hamstring Reach', pool: 'stretch', groups: ['hams'], equip: [], tier: 1, dose: 56, alt: true,
+      cue: 'Front leg straight, hinge and reach for the toes', cycle: 5,
+      frames: [P(STAND, { hip: [108, 132], torso: 46, footR: [152, 172], footL: [100, 178], handL: [152, 148], handR: [158, 152] }),
+               P(STAND, { hip: [106, 130], torso: 38, footR: [152, 172], footL: [98, 178], handL: [154, 158], handR: [160, 162] })] },
+
+    { id: 'wide-fold', name: 'Wide-Legged Forward Fold', pool: 'stretch', groups: ['hams', 'hips'], equip: [], tier: 1, dose: 56,
+      cue: 'Feet wide, let the head hang heavy', cycle: 5,
+      frames: [P(WIDE, { hip: [116, 128], torso: 24, arch: -2, handL: [148, 160], handR: [154, 162] }),
+               P(WIDE, { hip: [114, 126], torso: 18, arch: -2, handL: [150, 170], handR: [156, 172] })] },
+
+    { id: 'pigeon', name: 'Pigeon Stretch', pool: 'stretch', groups: ['hips'], equip: [], tier: 2, dose: 56, alt: true,
+      cue: 'Front shin across, sink the hips down', cycle: 5,
+      frames: [{ hip: [112, 164], torso: 34, head: -10, arch: 2, footR: [150, 172], footL: [62, 176], handL: [162, 176], handR: [168, 178], kneeR: -1, kneeL: -1 },
+               { hip: [112, 166], torso: 26, head: -14, arch: 4, footR: [150, 172], footL: [62, 176], handL: [162, 176], handR: [168, 178], kneeR: -1, kneeL: -1 }] },
+
+    { id: 'figure-4', name: 'Figure-4 Glute Stretch', pool: 'stretch', groups: ['hips'], equip: [], tier: 1, dose: 56, alt: true,
+      cue: 'Ankle over the knee, pull the thigh in', cycle: 5,
+      frames: [P(LIE_BACK, { footR: [144, 140], footL: [124, 152], handL: [148, 148], handR: [154, 144] }),
+               P(LIE_BACK, { footR: [140, 134], footL: [122, 148], handL: [146, 142], handR: [152, 138] })] },
+
+    { id: 'hip-flexor-kneel', name: 'Kneeling Hip Flexor Stretch', pool: 'stretch', groups: ['hips'], equip: [], tier: 1, dose: 56, alt: true,
+      cue: 'Back knee down, press the hips forward', cycle: 5,
+      frames: [{ hip: [116, 146], torso: 96, footR: [154, 178], footL: [80, 178], handL: [108, 142], handR: [126, 122] },
+               { hip: [118, 148], torso: 98, footR: [156, 178], footL: [78, 178], handL: [110, 140], handR: [124, 62] }] },
+
+    { id: '90-90-switch', name: '90-90 Hip Switch', pool: 'stretch', groups: ['hips'], equip: [], tier: 2, dose: 48,
+      cue: 'Sit tall, rotate the knees side to side', cycle: 5,
+      frames: [{ hip: [112, 168], torso: 80, head: -6, footR: [148, 172], footL: [80, 174], handL: [88, 158], handR: [150, 156], kneeR: -1, kneeL: -1 },
+               { hip: [112, 168], torso: 100, head: 6, footR: [80, 174], footL: [148, 172], handL: [150, 156], handR: [88, 158], kneeR: -1, kneeL: -1 }] },
+
+    { id: 'squat-to-stand', name: 'Squat to Stand', pool: 'stretch', groups: ['hips', 'hams'], equip: [], tier: 2, dose: 48,
+      cue: 'Hands stay down, straighten the legs and sink again', cycle: 5,
+      frames: [P(SQUAT_DEEP, { torso: 40, handL: [140, 174], handR: [146, 178] }),
+               P(HINGE_LOW, { handL: [144, 170], handR: [150, 172] })] },
+
+    { id: 'supine-twist', name: 'Supine Spinal Twist', pool: 'stretch', groups: ['spine'], equip: [], tier: 1, dose: 56, alt: true,
+      cue: 'Knees drop one way, shoulders stay down', cycle: 5,
+      frames: [P(LIE_BACK, { torso: -4, arch: 4, footR: [150, 158], footL: [146, 162], handL: [132, 176], handR: [186, 166], kneeR: 1, kneeL: 1 }),
+               P(LIE_BACK, { torso: -4, arch: 6, footR: [152, 164], footL: [148, 168], handL: [132, 176], handR: [186, 164], kneeR: 1, kneeL: 1 })] },
+
+    { id: 'open-book', name: 'Open Book Rotation', pool: 'stretch', groups: ['spine', 'shoulders'], equip: [], tier: 1, dose: 48, alt: true,
+      cue: 'Reach one arm to the ceiling, follow it with your eyes', cycle: 5,
+      frames: [QUAD_ALL4, P(QUAD_ALL4, { handR: [132, 88], torso: 10, head: 14, arch: -2 })] },
+
+    { id: 'cobra-hold', name: 'Cobra Hold', pool: 'stretch', groups: ['spine'], equip: [], tier: 1, dose: 56,
+      cue: 'Press the chest open, shoulders away from the ears', cycle: 5,
+      frames: [COBRA, P(COBRA, { torso: 40, head: 18, arch: -14 })] },
+
+    { id: 'neck-side', name: 'Neck Side Stretch', pool: 'stretch', groups: ['spine', 'shoulders'], equip: [], tier: 1, dose: 56, alt: true,
+      cue: 'Ear toward the shoulder, no shrugging', cycle: 5,
+      frames: [P(STAND, HANDS_HIP, { head: -28, torso: 88 }), P(STAND, { head: -34, torso: 88, handL: [110, 120], handR: [126, 66] })] },
+
+    { id: 'cross-body-shoulder', name: 'Cross-Body Shoulder Stretch', pool: 'stretch', groups: ['shoulders'], equip: [], tier: 1, dose: 56, alt: true,
+      cue: 'Straight arm across the chest, hug it in', cycle: 5,
+      frames: [P(STAND, { handR: [94, 100], handL: [102, 106] }), P(STAND, { handR: [88, 96], handL: [98, 102] })] },
+
+    { id: 'triceps-stretch', name: 'Overhead Triceps Stretch', pool: 'stretch', groups: ['shoulders'], equip: [], tier: 1, dose: 56, alt: true,
+      cue: 'Hand behind the head, guide the elbow back', cycle: 5,
+      frames: [P(STAND, { handR: [128, 86], handL: [116, 52], elbowR: 1 }),
+               P(STAND, { handR: [124, 90], handL: [114, 48], elbowR: 1 })] },
+
+    { id: 'wrist-circles', name: 'Wrist & Forearm Circles', pool: 'stretch', groups: ['shoulders'], equip: [], tier: 1, dose: 40,
+      cue: 'Arms out, big slow circles both ways', cycle: 3,
+      frames: [P(STAND, { handL: [144, 108], handR: [148, 112], elbowL: 1, elbowR: 1 }),
+               P(STAND, { handL: [148, 94], handR: [152, 98], elbowL: 1, elbowR: 1 }),
+               P(STAND, { handL: [138, 96], handR: [142, 100], elbowL: 1, elbowR: 1 })] },
+
+    { id: 'dog-calf-pedal', name: 'Down Dog Calf Pedal', pool: 'stretch', groups: ['ankles', 'hams'], equip: [], tier: 1, dose: 48,
+      cue: 'Pedal the heels, one down as the other lifts', cycle: 3.4,
+      frames: [P(DOWN_DOG, { footL: [74, 166], footR: [78, 178] }), P(DOWN_DOG, { footL: [72, 178], footR: [80, 166] })] },
+
+    { id: 'calf-stretch-step', name: 'Step-Back Calf Stretch', pool: 'stretch', groups: ['ankles'], equip: [], tier: 1, dose: 56, alt: true,
+      cue: 'Back leg straight, press the heel into the floor', cycle: 5,
+      frames: [P(STAND, HANDS_HIP, { hip: [122, 130], torso: 88, footR: [146, 178], footL: [86, 178] }),
+               P(STAND, HANDS_HIP, { hip: [124, 132], torso: 88, footR: [148, 178], footL: [84, 178] })] },
+
+    { id: 'ankle-circles', name: 'Standing Ankle Circles', pool: 'stretch', groups: ['ankles'], equip: [], tier: 1, dose: 40, alt: true,
+      cue: 'Lift one foot, trace slow circles', cycle: 3.4,
+      frames: [P(NARROW, HANDS_HIP, { footR: [146, 148] }), P(NARROW, HANDS_HIP, { footR: [154, 158] }),
+               P(NARROW, HANDS_HIP, { footR: [142, 162] })] },
 
     /* ============ STRENGTH — bodyweight, anywhere ============ */
 
@@ -235,7 +318,7 @@
       cue: 'Stay low, small drives out of the hole', cycle: 1.6,
       frames: [SQUAT_HALF, SQUAT_LOW] },
 
-    { id: 'wall-sit', name: 'Wall Sit', pool: 'strength', groups: ['legs'], equip: ['wall'], tier: 1, props: ['wall'],
+    { id: 'wall-sit', name: 'Wall Sit', pool: 'strength', groups: ['legs', 'carry'], equip: ['wall'], tier: 1, props: ['wall'],
       cue: 'Thighs level, breathe through it', cycle: 5,
       frames: [P(STAND, { hip: [54, 147], torso: 90, footL: [80, 178], footR: [88, 178], handL: [76, 142], handR: [84, 142] }),
                P(STAND, { hip: [54, 149], torso: 90, footL: [80, 178], footR: [88, 178], handL: [76, 144], handR: [84, 144] })] },
@@ -279,20 +362,20 @@
       cue: 'Hands wider, chest does the work', cycle: 3,
       frames: [P(PLANK_HIGH, { handL: [152, 178], handR: [170, 178] }), P(PUSHUP_LOW, { handL: [152, 178], handR: [170, 178] })] },
 
-    { id: 'pike-pushup', name: 'Pike Push-Up', pool: 'strength', groups: ['push', 'shoulders'], equip: [], tier: 3,
+    { id: 'pike-pushup', name: 'Pike Push-Up', pool: 'strength', groups: ['push', 'shoulders', 'arms'], equip: [], tier: 3,
       cue: 'Hips high, crown of the head to the floor', cycle: 3.2,
       frames: [DOWN_DOG, P(DOWN_DOG, { hip: [104, 124], handL: [150, 178], handR: [156, 178], head: -30, torso: -4 })] },
 
-    { id: 'chair-dip', name: 'Chair Dips', pool: 'strength', groups: ['push', 'arms'], equip: ['chair'], tier: 2, props: ['chair'],
+    { id: 'chair-dip', name: 'Chair Dips', pool: 'strength', groups: ['push', 'arms', 'carry'], equip: ['chair'], tier: 2, props: ['chair'],
       cue: 'Elbows back, chest tall', cycle: 3,
       frames: [P(STAND, { hip: [140, 148], torso: 84, footL: [86, 178], footR: [94, 178], handL: [168, 140], handR: [174, 140], kneeL: 1, kneeR: 1, elbowL: -1, elbowR: -1 }),
                P(STAND, { hip: [138, 164], torso: 84, footL: [86, 178], footR: [94, 178], handL: [168, 140], handR: [174, 140], kneeL: 1, kneeR: 1, elbowL: -1, elbowR: -1 })] },
 
-    { id: 'plank', name: 'Plank', pool: 'strength', groups: ['core'], equip: [], tier: 1,
+    { id: 'plank', name: 'Plank', pool: 'strength', groups: ['core', 'carry'], equip: [], tier: 1,
       cue: 'Squeeze glutes, ribs down, breathe', cycle: 5,
       frames: [PLANK_FORE, P(PLANK_FORE, { hip: [120, 150] })] },
 
-    { id: 'side-plank', name: 'Side Plank', pool: 'strength', groups: ['core'], equip: [], tier: 2, alt: true,
+    { id: 'side-plank', name: 'Side Plank', pool: 'strength', groups: ['core', 'carry'], equip: [], tier: 2, alt: true,
       cue: 'Stack the hips, push the floor away', cycle: 5,
       frames: [SIDE_PLANK, P(SIDE_PLANK, { hip: [120, 146] })] },
 
@@ -301,7 +384,7 @@
       frames: [P(LIE_BACK, { footR: [147, 139], footL: [141, 146], handR: [156, 132], handL: [150, 136], kneeR: 1, kneeL: 1 }),
                P(LIE_BACK, { footR: [147, 139], footL: [62, 168], handR: [186, 152], handL: [150, 136], kneeR: 1, kneeL: -1 })] },
 
-    { id: 'hollow-hold', name: 'Hollow Hold', pool: 'strength', groups: ['core'], equip: [], tier: 3,
+    { id: 'hollow-hold', name: 'Hollow Hold', pool: 'strength', groups: ['core', 'carry'], equip: [], tier: 3,
       cue: 'Low back pressed flat, long body', cycle: 4.5,
       frames: [{ hip: [116, 168], torso: 6, head: -8, arch: 6, footL: [62, 150], footR: [68, 146], handL: [186, 142], handR: [192, 146] },
                { hip: [116, 170], torso: 4, head: -8, arch: 6, footL: [62, 156], footR: [68, 152], handL: [186, 148], handR: [192, 152] }] },
@@ -320,6 +403,27 @@
       cue: 'Face down, sweep the arms wide and back', cycle: 4,
       frames: [{ hip: [112, 172], torso: 4, head: 6, arch: -6, footL: [66, 178], footR: [72, 178], handL: [174, 154], handR: [180, 150] },
                { hip: [112, 172], torso: 4, head: 6, arch: -6, footL: [66, 178], footR: [72, 178], handL: [136, 162], handR: [142, 158], elbowL: 1, elbowR: 1 }] },
+
+    /* Bodyweight pull / shoulder / arm work. Without these, a level-1 traveller
+     * has exactly one qualifying move per upper-body group and a circuit has no
+     * choice but to repeat it. */
+    { id: 'prone-y-raise', name: 'Prone Y-Raise', pool: 'strength', groups: ['pull', 'shoulders'], equip: [], tier: 1,
+      cue: 'Arms in a Y, lift from the upper back not the neck', cycle: 3.4,
+      frames: [{ hip: [112, 172], torso: 4, head: 6, footL: [66, 178], footR: [72, 178], handL: [178, 176], handR: [184, 174] },
+               { hip: [112, 171], torso: 6, head: 12, arch: -6, footL: [66, 178], footR: [72, 178], handL: [180, 154], handR: [186, 150] }] },
+
+    { id: 'dd-hold', name: 'Downward Dog Hold', pool: 'strength', groups: ['shoulders', 'core'], equip: [], tier: 1,
+      cue: 'Press the floor away, hips high, long spine', cycle: 5,
+      frames: [DOWN_DOG, P(DOWN_DOG, { hip: [104, 115], head: -25 })] },
+
+    { id: 'diamond-pushup', name: 'Diamond Push-Up', pool: 'strength', groups: ['push', 'arms'], equip: [], tier: 2,
+      cue: 'Hands together under the chest, elbows brush the ribs', cycle: 3,
+      frames: [P(PLANK_HIGH, { handL: [160, 178], handR: [164, 178] }),
+               P(PUSHUP_LOW, { handL: [160, 178], handR: [164, 178] })] },
+
+    { id: 'sphinx-press', name: 'Sphinx Press', pool: 'strength', groups: ['arms', 'push'], equip: [], tier: 2,
+      cue: 'Forearms to straight arms, triceps do the work', cycle: 3.2,
+      frames: [PLANK_FORE, P(PLANK_HIGH, { handL: [166, 178], handR: [172, 178] })] },
 
     { id: 'calf-raise', name: 'Calf Raises', pool: 'strength', groups: ['legs'], equip: [], tier: 1,
       cue: 'All the way up, slow all the way down', cycle: 2.4,

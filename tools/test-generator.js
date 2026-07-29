@@ -71,6 +71,40 @@ for (const loc of locations) {
           }
           if (plan.moves < 3) note(`${loc}/L${level}/${session}/${plan.template}: only ${plan.moves} moves`);
 
+          /* No move should run back to back, and none should dominate a session.
+           * Locked intervals are exempt: Tabata is 8 rounds of the same move by
+           * definition, which is the protocol rather than a repetition bug. */
+          const works = plan.items.filter((i) => i.kind === 'work');
+          for (let n = 1; n < works.length; n++) {
+            if (works[n].exId === works[n - 1].exId && !works[n].lock) {
+              note(`${plan.template}: ${works[n].exId} repeats back to back`);
+            }
+          }
+          const tally = {}, locked = {};
+          works.forEach((w) => {
+            tally[w.exId] = (tally[w.exId] || 0) + 1;
+            if (w.lock) locked[w.exId] = true;
+          });
+          for (const id in tally) {
+            const cap = locked[id] ? 8 : session === 'stretch' ? 1 : 6;
+            if (tally[id] > cap) note(`${loc}/${session}/${plan.template}: ${id} used ${tally[id]}x (cap ${cap})`);
+          }
+
+          /* Stretch is a continuous flow: gaps to change position, never rest.
+           * Every move must also land in a defensible dose range. */
+          if (session === 'stretch') {
+            if (plan.items.some((i) => i.kind === 'rest')) note(`${plan.template}: stretch should not contain rest items`);
+            if (!plan.items.some((i) => i.kind === 'transition')) note(`${plan.template}: stretch has no transitions`);
+            for (const it of plan.items) {
+              if (it.kind === 'transition' && (it.dur < 4 || it.dur > 9)) {
+                note(`${plan.template}: transition of ${it.dur}s outside 4-9s`);
+              }
+              if (it.kind === 'work' && (it.dur < 30 || it.dur > 60)) {
+                note(`${plan.template}: ${it.exId} at ${it.dur}s outside the 30-60s stretch range`);
+              }
+            }
+          }
+
           for (const it of plan.items) {
             if (it.dur <= 0) note(`${plan.template}: non-positive duration`);
             if (it.kind !== 'work') continue;

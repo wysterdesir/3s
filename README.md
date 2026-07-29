@@ -13,11 +13,37 @@ full-screen and offline like a native app.
 
 ## How it works
 
-| Session | 20 min | Focus |
+| Session | 20 min | Per move | Focus |
+|---|---|---|---|
+| **Stretch** | 24 moves, continuous flow with 5s gaps | 37–55s by exercise | Mobility, flexibility, range of motion |
+| **Strength** | 15–16 moves in circuits | 40s work / 30s rest | Muscle, resistance, structure |
+| **Sweat** | 18–32 intervals, full impact | 20–50s work / 15–20s rest | Cardio, endurance, conditioning |
+
+### Where the timings come from
+
+Strength and Sweat use conventional protocols: 40s work with 20s rest is a
+standard circuit interval, the 20/10 blocks are the published Tabata structure,
+and the ladders and pyramids are ordinary conditioning practice.
+
+Stretch is dosed per exercise rather than one-size-fits-all, because a ballistic
+move and a held position don't want the same time. Each exercise declares a
+`dose` and the generator honours it:
+
+| `dose` | Lands at | Kind of move |
 |---|---|---|
-| **Stretch** | Continuous flow, no rest | Mobility, flexibility, range of motion |
-| **Strength** | Circuits, work/rest intervals | Muscle, resistance, structure |
-| **Sweat** | Intervals, full impact | Cardio, endurance, conditioning |
+| 40 | ~37–39s | Ballistic and rhythmic — leg swings, arm circles, calf bounces |
+| 48 | ~45–47s | Flows — cat-cow, down dog to cobra, inchworm, 90-90 switch |
+| 56 | ~53–55s | Held positions — deep squat, pigeon, seated fold, child's pose |
+
+Those land where the literature does: dynamic-stretching studies typically use
+around 30s per exercise, ACSM prescribes 10–30s for static holds, and holds
+beyond 60s per muscle-tendon unit can blunt the performance that follows — so
+nothing is allowed past 60s. Side-switching exercises halve again, putting each
+side in the 18–28s range. `tools/test-generator.js` enforces the 30–60s band, so
+a new exercise can't quietly reintroduce a 90-second hold.
+
+The exact numbers shift a few seconds per session because the generator
+normalises every timeline to land on exactly 20:00.
 
 At the start of every workout it asks **where you are** — Gym, Home, or Travel —
 and builds the Strength session around what you can actually reach for. Gym gets
@@ -52,8 +78,8 @@ Variety is stacked three deep, so consecutive workouts don't repeat:
 3. **A seeded shuffle** picks among the freshest candidates, so it isn't a rigid
    cycle either.
 
-In testing, six consecutive workouts touch 93 of the 93 exercises available at
-Home, and 97 of 98 at a gym.
+In testing, six consecutive workouts touch 114 of the 114 exercises available at
+Home, and 117 of 119 at a gym.
 
 ---
 
@@ -67,8 +93,9 @@ kinematics keeping hands and feet planted where they belong. That means:
 - A new exercise is roughly six lines of data, not a video shoot.
 
 A pose sets where the hips are, the torso and head angle, and IK targets for the
-hands and feet. Angles are degrees with `90` = straight up; the coordinate space
-is a 240×200 box with the ground at `y=178`.
+hands and feet. Angles are degrees with `90` = straight up, and the ground line
+sits at `y=178`. Author in those coordinates; `rig.js` crops to a square viewBox
+centred on the circle that encloses every pose, so the figure fills the ring.
 
 ### Adding an exercise
 
@@ -81,12 +108,14 @@ Append to the `EX` array in `js/exercises.js`:
 ```
 
 `frames` is a **closed loop** — the last frame interpolates back to the first, so
-`[stand, bottom]` gives you a full rep down and up for free. `equip: []` means it
+`[stand, bottom]` gives you a full rep down and up for free. `dose` (stretch only) sets how long the move should run. `equip: []` means it
 works anywhere; anything listed (`dumbbell`, `barbell`, `bar`, `bench`, `band`,
 `wall`, `chair`) restricts it to locations that have it. `groups` are the slots a
 template can drop it into:
 
-- **stretch** — `spine`, `shoulders`, `hips`, `hams`, `ankles`, `core`, `full`
+- **stretch** — `spine`, `shoulders`, `hips`, `hams`, `ankles`
+  (keep an eye on supply: a template asking for more slots of a group than the
+  pool can fill forces a repeat, which `test-generator.js` fails on)
 - **strength** — `push`, `pull`, `legs`, `hinge`, `core`, `shoulders`, `arms`, `carry`
 - **sweat** — `impact`, `floor`, `low`, `upper`, `core`, `full`
 
@@ -143,7 +172,7 @@ Drives headless Chrome over the DevTools Protocol at real phone dimensions
 (390×844): clicks through every screen, screenshots each into `tools/shots/`,
 reports console errors, checks for horizontal overflow, verifies the figure is
 actually animating, and runs the **ring-fit check** — it maps every joint of
-every keyframe of all 98 exercises through the live screen transform and
+every keyframe of all 119 exercises through the live screen transform and
 confirms none escapes the progress ring. Run this after changing the figure
 viewBox, `.figwrap`/`.ring` sizing, or adding poses that reach further than the
 existing ones.
@@ -156,7 +185,7 @@ Renders every pose in a pool to a contact-sheet PNG (first keyframe dim, last
 bright, so one image shows the whole movement). This is the fastest way to spot
 a pose authored wrong — it caught squats whose hips dropped without traveling
 back, a wall on the wrong side of the figure, and limbs sagging through the
-floor. Pass `stretch`, `strength`, or `sweat`; omit for all 98.
+floor. Pass `stretch`, `strength`, or `sweat`; omit for all 119.
 
 Note `pose_sheet.py` hard-codes the viewBox to match `rig.js` — keep the two in
 sync or the sheet lies about framing.
