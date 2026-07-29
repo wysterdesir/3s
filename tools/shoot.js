@@ -274,7 +274,8 @@ function connect(url) {
         });
       });
     });
-    return { R: R, worst: worst, over: over.slice(0, 12), overCount: over.length };
+    return { R: R, worst: worst, over: over.slice(0, 12), overCount: over.length,
+             total: S3.exercises.all.length };
   })()`);
 
   console.log(`  ring fit: ring radius ${ringFit.R.toFixed(1)}px, furthest joint ` +
@@ -282,7 +283,7 @@ function connect(url) {
   if (ringFit.overCount) {
     problems.push(`${ringFit.overCount} joints escape the ring, e.g. ${ringFit.over.join(', ')}`);
   } else {
-    console.log('  all 98 exercises fit inside the ring');
+    console.log(`  all ${ringFit.total} exercises fit inside the ring`);
   }
 
   const t1 = await evalJs(`document.getElementById('paused-t').textContent`);
