@@ -115,14 +115,51 @@ exactly 20:00, so you don't need the durations to add up:
 py -m http.server 8131 --directory 3s
 ```
 
-Verify the generator after any change to the exercise or template data — it
-checks that every template at every location and level produces a timeline
-summing to exactly 20:00, that no session hands you equipment you don't have,
-and that the variety engine still spreads across the library:
+Four checks, all runnable without opening a browser by hand. Run the first two
+after any change to the exercise or template data:
 
 ```bash
 node tools/test-generator.js
 ```
+
+Covers every template at every location and level (3,267 sessions): each must
+sum to exactly 20:00, never call for equipment you don't have, never exceed your
+level, and the variety engine must still spread across the library.
+
+```bash
+node tools/test-wiring.js
+```
+
+Confirms every element id `app.js` reaches for exists in `index.html`, then runs
+a full 20-minute session through the real player with a stubbed clock, checking
+the cue counts, that pause actually freezes time, and that skip can't overshoot
+the end.
+
+```bash
+node tools/shoot.js https://wysterdesir.github.io/3s/
+```
+
+Drives headless Chrome over the DevTools Protocol at real phone dimensions
+(390×844): clicks through every screen, screenshots each into `tools/shots/`,
+reports console errors, checks for horizontal overflow, verifies the figure is
+actually animating, and runs the **ring-fit check** — it maps every joint of
+every keyframe of all 98 exercises through the live screen transform and
+confirms none escapes the progress ring. Run this after changing the figure
+viewBox, `.figwrap`/`.ring` sizing, or adding poses that reach further than the
+existing ones.
+
+```bash
+node tools/dump-poses.js && py tools/pose_sheet.py strength
+```
+
+Renders every pose in a pool to a contact-sheet PNG (first keyframe dim, last
+bright, so one image shows the whole movement). This is the fastest way to spot
+a pose authored wrong — it caught squats whose hips dropped without traveling
+back, a wall on the wrong side of the figure, and limbs sagging through the
+floor. Pass `stretch`, `strength`, or `sweat`; omit for all 98.
+
+Note `pose_sheet.py` hard-codes the viewBox to match `rig.js` — keep the two in
+sync or the sheet lies about framing.
 
 Regenerate the app icons after a branding change:
 

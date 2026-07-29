@@ -48,7 +48,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 /* ---------- home ---------- */
 
 .home-wrap {
-  margin: auto; width: 100%; max-width: 420px;
+  margin: auto; width: 100%; max-width: 420px; min-width: 0;
   display: flex; flex-direction: column; gap: 26px;
 }
 
@@ -110,7 +110,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 
 /* ---------- sheets ---------- */
 
-.sheet { margin: auto; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
+.sheet { margin: auto; width: 100%; max-width: 420px; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
 .sheet-wide { max-width: 640px; }
 .sheet-center { text-align: center; align-items: center; }
 .sheet-h { margin: 0; font-size: 24px; font-weight: 680; letter-spacing: -0.02em; }
@@ -185,7 +185,10 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 
 .figwrap {
   position: relative; z-index: 2;
-  width: min(80vw, 62vh, 360px); height: min(80vw, 62vh, 360px);
+  /* Held at ~92.5% of .ring below, which is the ratio between the ring circle
+   * (r=139 of a 300 viewBox) and the ring element. That lands the figure's
+   * content circle exactly on the ring stroke — biggest figure, no crossing. */
+  width: min(87vw, 68vh, 396px); height: min(87vw, 68vh, 396px);
   display: flex; align-items: center; justify-content: center;
 }
 .figure { width: 100%; height: 100%; overflow: visible; }
@@ -298,7 +301,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 
 .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(126px, 1fr)); gap: 9px; }
 .lib-cell { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px 8px 10px; }
-.lib-cell .figure { width: 100%; height: 96px; }
+.lib-cell .figure { width: 100%; height: 118px; }
 .lib-n { font-size: 12px; font-weight: 570; line-height: 1.25; margin-top: 4px; }
 .lib-e { font-size: 10.5px; color: var(--dim); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
 

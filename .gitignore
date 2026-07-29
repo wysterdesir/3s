@@ -1,6 +1,7 @@
 # generated dev artifacts from tools/
 tools/poses.json
 tools/pose-sheet*.png
+tools/shots/
 
 # OS noise
 Thumbs.db

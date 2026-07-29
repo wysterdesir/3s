@@ -22,9 +22,10 @@ INK = (243, 245, 249)
 ACCENT = (61, 220, 192)
 LABEL = (150, 160, 175)
 
-# rig viewBox is 240x200; scale it into the cell with room for a caption
-SCALE = (CELL_H - 34) / 200.0
-OX = (CELL_W - 240 * SCALE) / 2
+# must match the shipped viewBox in rig.js: "40 2 166 192"
+VB_X, VB_Y, VB_W, VB_H = 19, 8, 203, 203
+SCALE = (CELL_H - 34) / float(VB_H)
+OX = (CELL_W - VB_W * SCALE) / 2
 
 
 def font(size):
@@ -36,7 +37,7 @@ def font(size):
 
 def draw_figure(d, pts, ox, oy, colour, width):
     def T(p):
-        return (ox + p[0] * SCALE, oy + p[1] * SCALE)
+        return (ox + (p[0] - VB_X) * SCALE, oy + (p[1] - VB_Y) * SCALE)
 
     def line(a, b, w=width):
         d.line([T(a), T(b)], fill=colour, width=w, joint="curve")
@@ -75,7 +76,8 @@ def main():
         d.rectangle([cx, cy, cx + CELL_W - 1, cy + CELL_H - 1], outline=(28, 32, 40))
 
         ox, oy = cx + OX, cy + 4
-        d.line([(ox + 22 * SCALE, oy + 178 * SCALE), (ox + 218 * SCALE, oy + 178 * SCALE)],
+        gy = oy + (178 - VB_Y) * SCALE
+        d.line([(ox + (66 - VB_X) * SCALE, gy), (ox + (176 - VB_X) * SCALE, gy)],
                fill=GROUND, width=2)
 
         frames = ex["frames"]

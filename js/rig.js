@@ -53,6 +53,18 @@
     return [root[0] + u[0] * a + n[0] * h, root[1] + u[1] * a + n[1] * h];
   }
 
+  /* Knees and elbows must not sink through the floor. Prone, kneeling, and plank
+   * poses put a limb's endpoints close together with the foot planted, and the
+   * authored bend direction can then swing the joint below the ground line — a
+   * leg visibly sagging through the floor. Honour the authored bend whenever it
+   * stays above ground and flip it only when it would not. */
+  function ikAbove(root, target, l1, l2, bend, limit) {
+    var j = ik(root, target, l1, l2, bend);
+    if (j[1] <= limit) return j;
+    var alt = ik(root, target, l1, l2, -bend);
+    return alt[1] < j[1] ? alt : j;
+  }
+
   function normalize(pose) {
     var out = {};
     for (var k in DEFAULT_POSE) out[k] = DEFAULT_POSE[k];
@@ -80,11 +92,11 @@
       spineCtl: spineCtl,
       head: head,
       headR: RIG.headR,
-      kneeL: ik(hip, p.footL, RIG.thigh, RIG.shin, p.kneeL),
-      kneeR: ik(hip, p.footR, RIG.thigh, RIG.shin, p.kneeR),
+      kneeL: ikAbove(hip, p.footL, RIG.thigh, RIG.shin, p.kneeL, GROUND),
+      kneeR: ikAbove(hip, p.footR, RIG.thigh, RIG.shin, p.kneeR, GROUND),
       footL: p.footL, footR: p.footR,
-      elbowL: ik(shoulder, p.handL, RIG.upperArm, RIG.foreArm, p.elbowL),
-      elbowR: ik(shoulder, p.handR, RIG.upperArm, RIG.foreArm, p.elbowR),
+      elbowL: ikAbove(shoulder, p.handL, RIG.upperArm, RIG.foreArm, p.elbowL, GROUND),
+      elbowR: ikAbove(shoulder, p.handR, RIG.upperArm, RIG.foreArm, p.elbowR, GROUND),
       handL: p.handL, handR: p.handR
     };
   }
@@ -142,8 +154,14 @@
   }
 
   function Figure(mount) {
+    /* A square box centred on the minimal circle that encloses every joint of
+     * every pose (radius 101.6 at 120.2,109.5 — recompute with tools/shoot.js
+     * after adding poses). Because the content circle is inscribed in this box,
+     * scaling the box to sit just inside the progress ring guarantees no limb
+     * ever crosses the ring, at the largest figure the ring allows. Props may
+     * extend past it; they read as scenery. */
     this.svg = el('svg', {
-      viewBox: '0 0 240 200', class: 'figure',
+      viewBox: '19 8 203 203', class: 'figure',
       preserveAspectRatio: 'xMidYMid meet'
     });
 
@@ -152,7 +170,7 @@
     this.near = el('g', { class: 'fx-near' });
     this.propsFront = el('g', { class: 'fx-prop-front' });
 
-    this.ground = el('line', { class: 'fx-ground', x1: 22, y1: GROUND, x2: 218, y2: GROUND });
+    this.ground = el('line', { class: 'fx-ground', x1: 66, y1: GROUND, x2: 176, y2: GROUND });
 
     this.legFar = el('polyline', { class: 'fx-limb fx-dim' });
     this.armFar = el('polyline', { class: 'fx-limb fx-dim' });
@@ -280,8 +298,8 @@
       front: false,
       build: function () {
         return [el('line', { class: 'fx-fixture', x1: 46, y1: 26, x2: 194, y2: 26 }),
-                el('line', { class: 'fx-fixture fx-dim', x1: 60, y1: 26, x2: 60, y2: 4 }),
-                el('line', { class: 'fx-fixture fx-dim', x1: 180, y1: 26, x2: 180, y2: 4 })];
+                el('line', { class: 'fx-fixture fx-dim', x1: 60, y1: 26, x2: 60, y2: 11 }),
+                el('line', { class: 'fx-fixture fx-dim', x1: 180, y1: 26, x2: 180, y2: 11 })];
       },
       update: function () {}
     },

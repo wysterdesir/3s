@@ -65,10 +65,11 @@
   var TUCK = { hip: [116, 156], torso: 20, head: -12, footL: [106, 178], footR: [114, 178], handL: [156, 178], handR: [162, 178] };
   var JUMP_UP = { hip: [120, 102], torso: 92, footL: [113, 164], footR: [127, 162], handL: [110, 28], handR: [130, 28] };
 
-  /* Lying on the back: shoulders and head rest on the ground, head to the right. */
-  var LIE_BACK = { hip: [116, 170], torso: -6, head: 6, footL: [104, 178], footR: [110, 178], handL: [128, 176], handR: [132, 176], kneeL: -1, kneeR: -1 };
-  var BRIDGE_UP = P(LIE_BACK, { hip: [122, 150], torso: -18, head: 18, footL: [84, 178], footR: [90, 178], handL: [140, 176], handR: [144, 176] });
-  var BRIDGE_DOWN = P(LIE_BACK, { hip: [120, 170], torso: -6, head: 6, footL: [86, 178], footR: [92, 178], handL: [140, 176], handR: [144, 176] });
+  /* Lying on the back, head to the right. Sits high enough that the head circle
+   * rests on the ground line instead of sinking through it. */
+  var LIE_BACK = { hip: [116, 166], torso: -4, head: 4, footL: [104, 178], footR: [110, 178], handL: [130, 174], handR: [134, 174], kneeL: -1, kneeR: -1 };
+  var BRIDGE_UP = P(LIE_BACK, { hip: [122, 148], torso: -16, head: 16, footL: [84, 178], footR: [90, 178], handL: [136, 174], handR: [140, 174] });
+  var BRIDGE_DOWN = P(LIE_BACK, { hip: [120, 166], torso: -4, head: 4, footL: [86, 178], footR: [92, 178], handL: [132, 174], handR: [136, 174] });
 
   var HANG = { hip: [120, 112], torso: 90, footL: [116, 172], footR: [124, 172], handL: [112, 26], handR: [128, 26] };
   var HANG_TOP = P(HANG, { hip: [120, 86], footL: [104, 138], footR: [110, 134], kneeL: -1, kneeR: -1 });
@@ -312,13 +313,13 @@
 
     { id: 'superman', name: 'Superman', pool: 'strength', groups: ['core', 'pull'], equip: [], tier: 1,
       cue: 'Lift long, squeeze the back', cycle: 3.4,
-      frames: [{ hip: [112, 176], torso: 4, head: 0, footL: [66, 178], footR: [72, 178], handL: [190, 176], handR: [196, 178] },
-               { hip: [112, 174], torso: 8, head: 16, arch: -10, footL: [66, 164], footR: [72, 160], handL: [190, 152], handR: [196, 148] }] },
+      frames: [{ hip: [112, 172], torso: 4, head: 0, footL: [66, 178], footR: [72, 178], handL: [188, 172], handR: [194, 174] },
+               { hip: [112, 170], torso: 8, head: 16, arch: -10, footL: [66, 162], footR: [72, 158], handL: [188, 150], handR: [194, 146] }] },
 
     { id: 'reverse-snow', name: 'Reverse Snow Angels', pool: 'strength', groups: ['pull', 'shoulders'], equip: [], tier: 1,
       cue: 'Face down, sweep the arms wide and back', cycle: 4,
-      frames: [{ hip: [112, 176], torso: 4, head: 6, arch: -6, footL: [66, 178], footR: [72, 178], handL: [176, 158], handR: [182, 154] },
-               { hip: [112, 176], torso: 4, head: 6, arch: -6, footL: [66, 178], footR: [72, 178], handL: [138, 166], handR: [144, 162], elbowL: 1, elbowR: 1 }] },
+      frames: [{ hip: [112, 172], torso: 4, head: 6, arch: -6, footL: [66, 178], footR: [72, 178], handL: [174, 154], handR: [180, 150] },
+               { hip: [112, 172], torso: 4, head: 6, arch: -6, footL: [66, 178], footR: [72, 178], handL: [136, 162], handR: [142, 158], elbowL: 1, elbowR: 1 }] },
 
     { id: 'calf-raise', name: 'Calf Raises', pool: 'strength', groups: ['legs'], equip: [], tier: 1,
       cue: 'All the way up, slow all the way down', cycle: 2.4,
