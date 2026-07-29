@@ -1,0 +1,8 @@
+# generated dev artifacts from tools/
+tools/poses.json
+tools/pose-sheet*.png
+
+# OS noise
+Thumbs.db
+desktop.ini
+.DS_Store

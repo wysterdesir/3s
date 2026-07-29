@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>3S — Stretch · Strength · Sweat</title>
+<meta name="description" content="A 60-minute follow-along workout in three 20-minute sessions: Stretch, Strength, Sweat.">
+<meta name="theme-color" content="#08090C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="3S">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<section class="screen is-active" id="home">
+  <div class="home-wrap">
+    <header class="brand">
+      <div class="mark" aria-hidden="true">
+        <span class="mark-3">3</span><span class="mark-s">S</span>
+      </div>
+      <h1 class="brand-name">The 3S Method</h1>
+      <p class="brand-sub">Stretch <i>·</i> Strength <i>·</i> Sweat</p>
+    </header>
+
+    <div class="triad" aria-hidden="true">
+      <div class="triad-row" data-s="stretch"><span>Stretch</span><b>20 min</b></div>
+      <div class="triad-row" data-s="strength"><span>Strength</span><b>20 min</b></div>
+      <div class="triad-row" data-s="sweat"><span>Sweat</span><b>20 min</b></div>
+    </div>
+
+    <div class="home-cta">
+      <button class="btn btn-primary" id="btn-start">
+        <span>Start the Hour</span>
+        <small>3 sessions · 60 minutes</small>
+      </button>
+      <button class="btn btn-ghost" id="btn-single">Just one session</button>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="home-foot">
+      <button class="linky" id="btn-settings">Settings</button>
+      <button class="linky" id="btn-browse">Exercise library</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SINGLE SESSION PICK ============ -->
+<section class="screen" id="pick">
+  <div class="sheet">
+    <h2 class="sheet-h">Which session?</h2>
+    <div class="cards" id="pick-cards"></div>
+    <button class="btn btn-ghost" data-back="home">Back</button>
+  </div>
+</section>
+
+<!-- ============ WHERE ARE YOU ============ -->
+<section class="screen" id="where">
+  <div class="sheet">
+    <h2 class="sheet-h">Where are you today?</h2>
+    <p class="sheet-p">This shapes the Strength session around what you can actually reach for.</p>
+    <div class="cards" id="loc-cards"></div>
+
+    <div class="addons" id="addons">
+      <div class="addons-h">Anything else on hand?</div>
+      <div class="chips" id="addon-chips"></div>
+    </div>
+
+    <div class="sheet-cta">
+      <button class="btn btn-primary" id="btn-begin"><span>Begin</span></button>
+      <button class="btn btn-ghost" data-back="home">Back</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLAYER ============ -->
+<section class="screen screen-play" id="play">
+  <div class="play-top">
+    <div class="sess-pill" id="sess-pill">Stretch</div>
+    <div class="sess-meta"><span id="sess-idx">1 of 3</span><i>·</i><span id="sess-tmpl">—</span></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <svg class="ring" viewBox="0 0 300 300" aria-hidden="true">
+      <circle class="ring-bg" cx="150" cy="150" r="139"></circle>
+      <circle class="ring-fg" cx="150" cy="150" r="139" id="ring-fg"></circle>
+    </svg>
+    <div class="figwrap" id="figwrap"></div>
+    <div class="stage-badge" id="stage-badge">Next up</div>
+  </div>
+
+  <div class="info">
+    <div class="ex-name" id="ex-name">Get Ready</div>
+    <div class="ex-cue" id="ex-cue">First move coming up</div>
+  </div>
+
+  <div class="play-bottom">
+    <div class="clock" id="clock">20:00</div>
+    <div class="clock-label">left in this session</div>
+    <div class="sessbar"><i id="sessbar-fill"></i></div>
+    <div class="nextup" id="nextup"></div>
+  </div>
+
+  <button class="tapzone" id="tapzone" aria-label="Pause workout"></button>
+  <button class="pause-fab" id="pause-fab" aria-label="Pause">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.4"/><rect x="13.5" y="5" width="4" height="14" rx="1.4"/></svg>
+  </button>
+
+  <div class="overlay" id="overlay">
+    <div class="overlay-in">
+      <div class="paused-k">Paused</div>
+      <div class="paused-t" id="paused-t">20:00 left</div>
+      <button class="btn btn-primary" id="btn-resume"><span>Resume</span></button>
+      <div class="overlay-row">
+        <button class="btn btn-small" id="btn-prev">Previous</button>
+        <button class="btn btn-small" id="btn-skip">Skip move</button>
+      </div>
+      <div class="overlay-row">
+        <button class="btn btn-small" id="btn-mute">Sound: on</button>
+        <button class="btn btn-small btn-danger" id="btn-quit">End workout</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BETWEEN SESSIONS ============ -->
+<section class="screen" id="bridge">
+  <div class="sheet sheet-center">
+    <div class="tick" aria-hidden="true">
+      <svg viewBox="0 0 48 48"><path d="M13 25l7.5 7.5L35 17"/></svg>
+    </div>
+    <h2 class="sheet-h" id="bridge-h">Stretch complete</h2>
+    <p class="sheet-p" id="bridge-p">Next up: Strength — 20 minutes.</p>
+    <div class="bridge-count" id="bridge-count">Starting in 20</div>
+    <button class="btn btn-primary" id="btn-next-now"><span>Start now</span></button>
+    <button class="btn btn-ghost" id="btn-hold">Hold here</button>
+    <button class="linky" id="btn-bail">End workout</button>
+  </div>
+</section>
+
+<!-- ============ DONE ============ -->
+<section class="screen" id="done">
+  <div class="sheet sheet-center">
+    <div class="tick tick-big" aria-hidden="true">
+      <svg viewBox="0 0 48 48"><path d="M13 25l7.5 7.5L35 17"/></svg>
+    </div>
+    <h2 class="sheet-h" id="done-h">Done.</h2>
+    <p class="sheet-p" id="done-p"></p>
+    <div class="done-stats" id="done-stats"></div>
+    <button class="btn btn-primary" data-back="home"><span>Finish</span></button>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section class="screen" id="settings">
+  <div class="sheet">
+    <h2 class="sheet-h">Settings</h2>
+    <div class="rows" id="setting-rows"></div>
+    <div class="sheet-p" id="level-note"></div>
+    <button class="btn btn-ghost" data-back="home">Back</button>
+    <button class="linky linky-danger" id="btn-reset">Reset all progress</button>
+  </div>
+</section>
+
+<!-- ============ LIBRARY ============ -->
+<section class="screen" id="browse">
+  <div class="sheet sheet-wide">
+    <h2 class="sheet-h">Exercise library</h2>
+    <p class="sheet-p" id="browse-count"></p>
+    <div class="lib-tabs" id="lib-tabs"></div>
+    <div class="lib-grid" id="lib-grid"></div>
+    <button class="btn btn-ghost" data-back="home">Back</button>
+  </div>
+</section>
+
+<script src="js/rig.js"></script>
+<script src="js/exercises.js"></script>
+<script src="js/workouts.js"></script>
+<script src="js/player.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
