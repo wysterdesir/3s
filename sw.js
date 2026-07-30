@@ -1,6 +1,6 @@
 /* 3S service worker — cache the shell so a workout survives a dead signal.
  * Bump CACHE on every release so clients pick up new workouts. */
-var CACHE = '3s-v3';
+var CACHE = '3s-v4';
 var SHELL = [
   './',
   './index.html',
@@ -27,24 +27,29 @@ self.addEventListener('activate', function (e) {
   }).then(function () { return self.clients.claim(); }));
 });
 
-/* Network-first for navigations so a new build lands promptly; cache-first for
- * assets so the app opens instantly and works offline. */
-self.addEventListener('fetch', function (e) {
-  var req = e.request;
-  if (req.method !== 'GET') return;
+/* Network-first for anything that carries app logic — the HTML, CSS, and JS all
+ * live at stable filenames, so cache-first would pin an installed app to an old
+ * build and make every future fix silently invisible. Cache is the offline
+ * fallback, not the default. Icons and the manifest are effectively immutable,
+ * so those stay cache-first for instant startup. */
+var IMMUTABLE = /\.(png|jpg|svg|webmanifest|woff2?)$/i;
 
-  if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).then(function (res) {
+function networkFirst(req) {
+  return fetch(req).then(function (res) {
+    if (res && res.status === 200 && res.type === 'basic') {
       var copy = res.clone();
       caches.open(CACHE).then(function (c) { c.put(req, copy); });
-      return res;
-    }).catch(function () {
-      return caches.match(req).then(function (r) { return r || caches.match('./index.html'); });
-    }));
-    return;
-  }
+    }
+    return res;
+  }).catch(function () {
+    return caches.match(req).then(function (r) {
+      return r || (req.mode === 'navigate' ? caches.match('./index.html') : undefined);
+    });
+  });
+}
 
-  e.respondWith(caches.match(req).then(function (hit) {
+function cacheFirst(req) {
+  return caches.match(req).then(function (hit) {
     if (hit) return hit;
     return fetch(req).then(function (res) {
       if (res && res.status === 200 && res.type === 'basic') {
@@ -53,5 +58,12 @@ self.addEventListener('fetch', function (e) {
       }
       return res;
     });
-  }));
+  });
+}
+
+self.addEventListener('fetch', function (e) {
+  var req = e.request;
+  if (req.method !== 'GET') return;
+  if (new URL(req.url).origin !== self.location.origin) return;
+  e.respondWith(IMMUTABLE.test(new URL(req.url).pathname) ? cacheFirst(req) : networkFirst(req));
 });

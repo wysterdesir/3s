@@ -6,6 +6,10 @@
   var EXS = global.S3.exercises;
   var KEY = 's3.v1';
 
+  /* Shown in Settings. Bump with sw.js CACHE on every release so "which build am
+   * I actually running?" is answerable from the phone instead of by guessing. */
+  var BUILD = '2026-07-29 · v4';
+
   /* ---------- state ---------- */
 
   var DEFAULTS = {
@@ -417,7 +421,8 @@
     var lv = level(), need = lv === 1 ? 6 - (S.counts.strength || 0) : lv === 2 ? 12 - (S.counts.strength || 0) : 0;
     $('level-note').innerHTML = 'You are at <b>level ' + lv + '</b> — ' +
       (lv === 1 ? '40 second work intervals.' : lv === 2 ? '45 second intervals, harder variations unlocked.' : '50 second intervals, full exercise library.') +
-      (need > 0 ? ' ' + need + ' more Strength session' + (need === 1 ? '' : 's') + ' to level up.' : '');
+      (need > 0 ? ' ' + need + ' more Strength session' + (need === 1 ? '' : 's') + ' to level up.' : '') +
+      '<br><br>Build <b>' + BUILD + '</b> · ' + EXS.all.length + ' exercises';
   }
 
   function row(key, title, sub, val) {
@@ -501,9 +506,23 @@
   renderHome();
   figure.draw(EXS.byId['squat'].frames[0]);
 
+  /* Service worker updates used to need a second manual reload to take effect,
+   * which in an installed PWA meant shipped fixes stayed invisible. The worker
+   * calls skipWaiting/clients.claim, so it takes control as soon as it installs;
+   * reloading once on that handover puts the fresh CSS and JS on screen without
+   * the user knowing anything happened. The guard stops a reload loop. */
   if ('serviceWorker' in navigator) {
+    var reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (reloading || current === 'play') return;   // never yank a running workout
+      reloading = true;
+      global.location.reload();
+    });
+
     global.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function () { /* offline support is a bonus */ });
+      navigator.serviceWorker.register('sw.js').then(function (reg) {
+        reg.update().catch(function () {});
+      }).catch(function () { /* offline support is a bonus */ });
     });
   }
 })(window);
