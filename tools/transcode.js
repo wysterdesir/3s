@@ -102,10 +102,17 @@ function resolveId(file, relDir) {
   if (mapping[c]) return mapping[c];
   if (byCore[c]) return byCore[c];
 
-  /* Substring fallback, longest core first, so 'Barbell Bench Press 4K Male'
-   * still lands on a shorter library name it contains. */
+  /* Substring fallback, longest core first. It must also COVER most of the source
+   * name: 'wide push ups bodyweight' contains both 'wide-push-up' and 'push-up',
+   * and the looser test let the shorter one win, silently pairing our Wide Push-Up
+   * with a plain push-up clip. A wrong animation is worse than falling back to the
+   * drawn figure, so a candidate has to account for at least 60% of the tokens. */
+  const cTok = c.split('-').filter(Boolean);
   for (const k of coreKeys) {
-    if (k.length >= 6 && (c === k || c.includes('-' + k) || c.includes(k + '-') || c === k)) return byCore[k];
+    if (k.length < 6) continue;
+    if (!(c === k || c.includes('-' + k) || c.includes(k + '-'))) continue;
+    const kTok = k.split('-').filter(Boolean);
+    if (kTok.length / cTok.length >= 0.6) return byCore[k];
   }
   return null;
 }
@@ -121,7 +128,10 @@ function classify(full, relPath) {
   return {
     green: /green|chroma/.test(hay),
     fourK: /\b(4k uhd|uhd 2160|2160p|3840)\b/.test(hay),
+    p720: /\b720p?\b/.test(hay),
+    p1080: /\b(full hd 1080|1080p)\b/.test(hay) && !/\b720p?\b/.test(hay),
     vertical: /vertical|9.16|portrait|1080x1920/.test(hay),
+    duplicate: /older character/.test(hay),
     female: /female/.test(hay),
     logo: /with.?logo/.test(hay) && !/without.?logo/.test(hay)
   };
@@ -130,9 +140,15 @@ function classify(full, relPath) {
 function score(v) {
   let s = 0;
   if (v.vertical) return -1000;                 // stage is square; never use 9:16
+  if (v.duplicate) return -1000;                // vendor marks these as dupes
   if (v.logo) s -= 50;                          // prefer the clean, unbranded copy
   if (v.green) s += 100;                        // keys onto the dark theme
-  if (v.fourK) s += 10;                         // more pixels to crop into
+  /* Smaller source wins: everything is downscaled to 480x480, so a 4K file is
+   * five times the download for a marginally cleaner crop. Preferring 4K was
+   * backwards. */
+  if (v.p720) s += 12;
+  else if (v.p1080) s += 8;
+  else if (v.fourK) s += 2;
   if (v.female === PREFER_FEMALE) s += 1;       // consistent model across the app
   return s;
 }
