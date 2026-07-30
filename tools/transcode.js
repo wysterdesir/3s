@@ -230,6 +230,10 @@ if (DRY || LIST) {
     fs.writeFileSync(outFile, matchedIds.sort().map((id) => best[id].file.full).join('\n') + '\n');
     console.log(`\nwrote ${matchedIds.length} paths to ${outFile}`);
     console.log('Download ONLY these. Everything else in the bundle is unused.');
+
+    /* Emit the matched ids so suggest-mapping.js works from THIS matcher's
+     * verdict rather than reimplementing it and drifting out of agreement. */
+    fs.writeFileSync(path.join(__dirname, 'matched-ids.txt'), matchedIds.sort().join('\n') + '\n');
   }
   process.exit(0);
 }
