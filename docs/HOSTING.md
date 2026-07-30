@@ -14,21 +14,36 @@ account or a payment method, so they aren't something the agent can do.
 
 ---
 
-## Phase 0 — Cloudflare Pages + private R2 (free, no paywall yet)
+## Phase 0 — Cloudflare hosting (DONE) + R2 when clips exist
 
-The app keeps working on GitHub Pages the whole time. Nothing is cut over until
-the new host is verified on your phone.
+**Status: the hosting port is complete and verified.**
 
-### you: create the accounts
+- Live at **https://3s.wyster-desir.workers.dev**
+- Connected to `wysterdesir/3s`, deploys automatically on push to `main`
+- `_headers` is honoured: JS/CSS revalidate, icons cache a week, security
+  headers present
+- Full harness passes against it (no console errors, no overflow, ring drains,
+  all 119 exercises fit)
 
-1. Sign up at `dash.cloudflare.com` (free plan is sufficient).
-2. **Workers & Pages → Create → Pages → Connect to Git**, pick `wysterdesir/3s`.
-   - Framework preset: **None**
-   - Build command: *(leave empty — there is no build step)*
-   - Output directory: `/`
-3. Deploy. You'll get `3s-xxx.pages.dev`. `_headers` in the repo root is picked up
-   automatically, so caching and security headers are already correct.
-4. **R2 → Create bucket**, name it `3s-media`. Leave public access **off**.
+Note it is a **Worker with static assets**, not a classic Pages project —
+Cloudflare merged the two products, so "Workers & Pages → Create" now produces a
+Worker and a `*.workers.dev` URL rather than `*.pages.dev`. Functionally this is
+better for us: the dashboard states that requests to a static-assets-only Worker
+are *served at no charge*.
+
+GitHub Pages remains live and untouched. Both URLs work; nothing needs retiring.
+
+### R2 — not needed until there are clips to store
+
+R2 is only required once you own media. It is **not** blocking anything today, so
+don't attach it before there's something to put in it.
+
+When you do need it, `dash.cloudflare.com → R2` shows a subscription screen. It
+reads **Total Due Now $0.00** and includes **10 GB/month free** (the whole clip
+library is ~0.015 GB), but clicking it accepts Cloudflare's terms and attaches an
+**auto-renewing subscription to your payment method**, which the agent will not
+do on your behalf. Click **Add R2 subscription to my account** yourself, then
+create a bucket named `3s-media` with public access **off**.
 
 ### you: buy and upload the clips
 
@@ -130,14 +145,18 @@ Not legal advice — worth a short consult before the first sale.
 
 Keep both live until the last step.
 
-- [ ] Cloudflare Pages build succeeds and `*.pages.dev` loads
-- [ ] `node tools/shoot.js https://<pages-url>/` reports no errors and no overflow
-- [ ] Run a full session on your phone from the Pages URL
+- [x] Cloudflare deploy succeeds and the URL loads
+- [x] `node tools/shoot.js https://3s.wyster-desir.workers.dev/` — clean
+- [ ] Run a full session on your phone from the new URL
 - [ ] Custom domain attached (Cloudflare DNS makes this free), e.g. `3smethod.com`
 - [ ] Home-screen install works from the new URL
 - [ ] Only then: retire the GitHub Pages deployment
 
-Note the installed PWA is tied to its origin, so moving domains means installing
-again from the new URL and starting a fresh `localStorage` — your streak and level
-won't follow automatically. If that matters, say so and I'll add an
-export/import of progress before the cutover.
+**Until the cutover, keep doing your workouts on the GitHub Pages install.** A PWA
+is tied to its origin, so installing the `workers.dev` version creates a second
+app with its own empty `localStorage` — your streak, level, and exercise history
+would not follow. Open the new URL in a browser tab to sanity-check it, but don't
+make it your daily app yet.
+
+The cutover is worth doing once, to a custom domain, with progress carried over.
+Say the word and I'll add export/import of progress first so nothing is lost.
