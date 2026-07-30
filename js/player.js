@@ -67,7 +67,7 @@
   /* ---------- player ---------- */
 
   function Player(opts) {
-    this.figure = opts.figure;
+    this.stage = opts.stage;
     this.audio = opts.audio || new Audio2();
     this.onTick = opts.onTick || function () {};
     this.onItem = opts.onItem || function () {};
@@ -109,6 +109,7 @@
 
   Player.prototype.start = function () {
     this.audio.unlock();
+    if (this.stage.unlock) this.stage.unlock();
     this.acquireWake();
     this.resume();
   };
@@ -208,7 +209,7 @@
     if (i !== this.index) {
       this.index = i;
       this._cued = {};
-      this.figure.setProps(item.kind === 'work' ? item.props : this._nextProps(i));
+      this.stage.setExercise(this._exerciseFor(item, i), this._propsFor(item, i));
       this.onItem(item, i);
       if (item.kind === 'work') {
         this.audio.go();
@@ -240,18 +241,10 @@
     if (left <= 2.0) this._cue('t2', function () { s3.audio.tick(); });
     if (left <= 1.0) this._cue('t1', function () { s3.audio.tick(); });
 
-    /* animate: work items show themselves, rest shows the next move slowly */
-    var showEx = null, speed = 1;
-    if (item.kind === 'work') {
-      showEx = global.S3.exercises.byId[item.exId];
-    } else {
-      var nxt = this._nextWork(i);
-      if (nxt) { showEx = global.S3.exercises.byId[nxt.exId]; speed = 0.55; }
-    }
-    if (showEx) {
-      var phase = (into * speed) / (showEx.cycle || 3);
-      this.figure.draw(global.S3.rig.sampleLoop(showEx.frames, phase));
-    }
+    /* Work items show themselves; rest previews the next move at reduced speed. */
+    var showEx = this._exerciseFor(item, i);
+    var speed = item.kind === 'work' ? 1 : 0.55;
+    this.stage.frame(into, speed);
 
     this.onTick({
       elapsed: sec, remaining: Math.max(0, this.total - sec),
@@ -279,6 +272,18 @@
   Player.prototype._nextProps = function (from) {
     var n = this._nextWork(from);
     return n ? n.props : [];
+  };
+
+  /* Which exercise the stage should be showing for this item: itself during work,
+   * the upcoming move during rest and transitions so it can be learned first. */
+  Player.prototype._exerciseFor = function (item, i) {
+    if (item.kind === 'work') return global.S3.exercises.byId[item.exId] || null;
+    var n = this._nextWork(i);
+    return n ? (global.S3.exercises.byId[n.exId] || null) : null;
+  };
+
+  Player.prototype._propsFor = function (item, i) {
+    return item.kind === 'work' ? item.props : this._nextProps(i);
   };
 
   global.S3 = global.S3 || {};

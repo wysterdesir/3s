@@ -59,18 +59,26 @@ const sandbox = {
 };
 sandbox.AudioContext = undefined;
 vm.createContext(sandbox);
-for (const f of ['js/rig.js', 'js/exercises.js', 'js/workouts.js', 'js/player.js']) {
+for (const f of ['js/rig.js', 'js/exercises.js', 'js/media.js', 'js/workouts.js', 'js/player.js']) {
   vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), sandbox, { filename: f });
 }
 
 const S3 = sandbox.window.S3;
 let clock = 0;
 
-/* a figure stub that records what it was asked to draw */
+/* A stage stub standing in for the video-or-figure stage. It records what it was
+ * asked to show so we can assert the player drives it once per interval. */
 const drawn = [];
-const figure = {
-  setProps(p) { this.props = p; },
-  draw(pose) { drawn.push(pose); return S3.rig.solve(pose); }
+const shown = [];
+const stage = {
+  props: [],
+  unlock() {},
+  setExercise(ex, props) { shown.push(ex ? ex.id : null); this.props = props || []; this.ex = ex; },
+  frame(into, speed) {
+    if (!this.ex) return;
+    const phase = (into * (speed || 1)) / (this.ex.cycle || 3);
+    drawn.push(S3.rig.sampleLoop(this.ex.frames, phase));
+  }
 };
 
 /* an audio stub that counts cues */
@@ -91,7 +99,7 @@ const seenItems = new Set();
 let lastRemaining = Infinity;
 
 const player = new S3.player.Player({
-  figure, audio,
+  stage, audio,
   onItem: (item, i) => seenItems.add(i),
   onTick: (t) => {
     if (t.remaining > lastRemaining + 0.001) note(`clock went backwards: ${lastRemaining} -> ${t.remaining}`);
@@ -117,7 +125,16 @@ if (!done) note('session never completed');
 if (seenItems.size !== plan.items.length) {
   note(`visited ${seenItems.size} of ${plan.items.length} items`);
 }
-if (!drawn.length) note('figure was never drawn');
+if (!drawn.length) note('stage was never asked to render');
+if (shown.length !== plan.items.length) {
+  note(`stage.setExercise called ${shown.length}x for ${plan.items.length} items`);
+}
+/* Rest and transition items must preview the UPCOMING move, not nothing. */
+plan.items.forEach((it, n) => {
+  if (it.kind === 'work' && shown[n] !== it.exId) {
+    note(`item ${n} is work ${it.exId} but stage was shown ${shown[n]}`);
+  }
+});
 if (cues.fanfare !== 1) note(`expected 1 finish fanfare, got ${cues.fanfare}`);
 
 const works = plan.items.filter((i) => i.kind === 'work').length;
@@ -133,7 +150,7 @@ console.log(`ran a full ${plan.template} session: ${plan.items.length} items, ${
 console.log(`cues — ${cues.go} go, ${cues.rest} rest, ${cues.tick} ticks, ${cues.switchSide} switches, ${cues.said.length} spoken`);
 
 /* pause must freeze the clock */
-const p2 = new S3.player.Player({ figure, audio, onDone: () => {} });
+const p2 = new S3.player.Player({ stage, audio, onDone: () => {} });
 p2.load(plan);
 clock = 0; p2.start();
 clock = 5000; p2._frame();
@@ -151,7 +168,7 @@ if (Math.abs(p2.elapsed() - (atPause + 1)) > 0.02) {
 console.log(`pause held at ${atPause.toFixed(2)}s across 55s of wall clock, resumed cleanly`);
 
 /* skip must jump to the next work item, not grant free time */
-const p3 = new S3.player.Player({ figure, audio, onDone: () => {} });
+const p3 = new S3.player.Player({ stage, audio, onDone: () => {} });
 p3.load(plan);
 clock = 0; p3.start(); p3._frame();
 const before = p3.itemAt(p3.elapsed());

@@ -8,7 +8,7 @@
 
   /* Shown in Settings. Bump with sw.js CACHE on every release so "which build am
    * I actually running?" is answerable from the phone instead of by guessing. */
-  var BUILD = '2026-07-29 · v4';
+  var BUILD = '2026-07-30 · v5';
 
   /* ---------- state ---------- */
 
@@ -109,7 +109,9 @@
 
   /* ---------- player setup ---------- */
 
-  var figure = new global.S3.rig.Figure($('figwrap'));
+  var stage = new global.S3.stage.Stage($('figwrap'));
+  var figure = stage.figure;      // the library screen still draws poses directly
+  global.S3.media.load();
   var audio = new global.S3.player.Audio();
   audio.on = S.sound;
   audio.voice = S.voice;
@@ -126,7 +128,7 @@
 
   var run = null;    // { plan, sessions, idx, single }
   var player = new global.S3.player.Player({
-    figure: figure,
+    stage: stage,
     audio: audio,
     onItem: onItem,
     onTick: onTick,
@@ -422,7 +424,8 @@
     $('level-note').innerHTML = 'You are at <b>level ' + lv + '</b> — ' +
       (lv === 1 ? '40 second work intervals.' : lv === 2 ? '45 second intervals, harder variations unlocked.' : '50 second intervals, full exercise library.') +
       (need > 0 ? ' ' + need + ' more Strength session' + (need === 1 ? '' : 's') + ' to level up.' : '') +
-      '<br><br>Build <b>' + BUILD + '</b> · ' + EXS.all.length + ' exercises';
+      '<br><br>Build <b>' + BUILD + '</b> · ' + EXS.all.length + ' exercises · ' +
+      (global.S3.media.count() || 'no') + ' video clip' + (global.S3.media.count() === 1 ? '' : 's');
   }
 
   function row(key, title, sub, val) {
@@ -502,6 +505,15 @@
   }
 
   /* ---------- boot ---------- */
+
+  /* Verification seam. Clips arrive incrementally, so tools/shoot.js needs a way
+   * to put a specific exercise on the stage rather than waiting for the generator
+   * to happen to pick one that has a clip. Read-only handles, no behaviour. */
+  global.S3.app = {
+    stage: stage, player: player,
+    show: function (exId) { stage.setExercise(EXS.byId[exId] || null); stage.frame(0.4, 1); },
+    state: function () { return S; }
+  };
 
   renderHome();
   figure.draw(EXS.byId['squat'].frames[0]);

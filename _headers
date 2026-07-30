@@ -1,0 +1,34 @@
+# Cloudflare Pages / Netlify header rules.
+#
+# App logic lives at stable filenames, so it must not be cached at the edge or in
+# the browser beyond a revalidation — otherwise a shipped fix stays invisible, the
+# same trap the service worker had. Hashed or genuinely immutable assets can be
+# cached hard.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+
+# HTML, JS, CSS: always revalidate so updates land on the next load.
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/sw.js
+  Cache-Control: no-cache
+/*.css
+  Cache-Control: no-cache
+/js/*
+  Cache-Control: no-cache
+/media/manifest.json
+  Cache-Control: no-cache
+
+# Icons change only when branding does.
+/icons/*
+  Cache-Control: public, max-age=604800
+
+# Exercise clips are content-addressed by exercise id and replaced wholesale, so
+# they can cache hard. Served from R2 in production, not from here.
+/media/*.webm
+  Cache-Control: public, max-age=2592000

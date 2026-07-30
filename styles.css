@@ -195,6 +195,25 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 }
 .figure { width: 100%; height: 100%; overflow: visible; }
 
+/* Licensed exercise clip. Hidden unless the stage decides to use one, so the
+ * drawn figure remains the default and the fallback. Keyed clips ('alpha') sit
+ * straight on the dark background; clips that keep their own light background
+ * ('card') get a panel so they don't read as a floating rectangle. */
+/* Inset rather than filling .figwrap: the drawn figure is fitted to the circle
+ * inscribed in that square, but a video fills the square's corners, so an
+ * uninset clip pokes through the progress ring. */
+.clip {
+  position: absolute; inset: 7%;
+  object-fit: contain;
+  display: none;
+  background: transparent;
+}
+.clip.is-on { display: block; }
+.clip.is-card {
+  background: #eef1f6;
+  border-radius: 20px;
+}
+
 .fx-limb, .fx-spine, .fx-neck {
   fill: none; stroke: var(--ink);
   stroke-width: 7; stroke-linecap: round; stroke-linejoin: round;

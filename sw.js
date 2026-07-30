@@ -1,6 +1,6 @@
 /* 3S service worker — cache the shell so a workout survives a dead signal.
  * Bump CACHE on every release so clients pick up new workouts. */
-var CACHE = '3s-v4';
+var CACHE = '3s-v5';
 var SHELL = [
   './',
   './index.html',
@@ -8,6 +8,8 @@ var SHELL = [
   './manifest.webmanifest',
   './js/rig.js',
   './js/exercises.js',
+  './js/media.js',
+  './js/stage.js',
   './js/workouts.js',
   './js/player.js',
   './js/app.js',
