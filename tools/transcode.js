@@ -114,9 +114,13 @@ function resolveId(file, relDir) {
 
 function classify(full, relPath) {
   const hay = (relPath + ' ' + path.basename(full)).toLowerCase();
+  /* Match the resolution FOLDER, not a bare '4k' substring: the bundle's own root
+   * is named "...MASTER FOLDER 4K+1080p+ILLUSTRATIONS+EXERCISE CATALOG", so every
+   * path contains '4k' and a loose test marked all 68 sources as 4K including the
+   * 720p ones. Harmless for ranking, but it made the report lie. */
   return {
     green: /green|chroma/.test(hay),
-    fourK: /4k|uhd|3840|2160/.test(hay),
+    fourK: /\b(4k uhd|uhd 2160|2160p|3840)\b/.test(hay),
     vertical: /vertical|9.16|portrait|1080x1920/.test(hay),
     female: /female/.test(hay),
     logo: /with.?logo/.test(hay) && !/without.?logo/.test(hay)
