@@ -17,6 +17,11 @@
   'use strict';
 
   var CONFIG = {
+    /* Flip to true on a deployment that actually serves clips. Left false so the
+     * public build does not fetch a manifest it knowingly does not have — the
+     * request would 404 into the console on every load and bury real errors. */
+    enabled: false,
+
     /* Static path today. Later: an endpoint that returns a signed URL, e.g.
      * 'https://api.3smethod.com/clip'. Keep it relative so the app is portable
      * between hosts without a code change. */
@@ -29,7 +34,7 @@
   var listeners = [];
 
   function load() {
-    if (!global.fetch) { finish({}); return; }
+    if (!CONFIG.enabled || !global.fetch) { finish({}); return; }
     global.fetch(CONFIG.manifest, { cache: 'no-cache' })
       .then(function (r) { return r.ok ? r.json() : {}; })
       .then(finish)

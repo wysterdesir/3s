@@ -44,9 +44,11 @@ the new host is verified on your phone.
    per exercise** — roughly 15 MB for the full library.
 7. Upload the contents of `media/` to the `3s-media` bucket (drag-and-drop in the
    dashboard is fine at this size).
-8. Point the app at the bucket by setting `base` in `js/media.js` to the bucket's
-   public or signed URL. That is the **only** code change needed — every clip URL
-   in the app is built in that one function.
+8. In `js/media.js` set `CONFIG.enabled = true` and point `CONFIG.base` at the
+   bucket's public or signed URL. Those two lines are the **only** code change
+   needed — every clip URL in the app is built in that one function. `enabled`
+   stays false by default so a build without clips never requests a manifest it
+   knows is absent.
 
 ### filenames map to exercises automatically
 
