@@ -56,7 +56,33 @@ non-public.
 
 ### you: buy and upload the clips
 
-5. Buy from ExerciseAnimatic. Three things that make the pipeline work well:
+**The product: ExerciseAnimatic "Ultimate Bundle + Lifetime License"** — the only
+bundle they sell; everything else is $1 per individual clip.
+`/product-page/complete-2000-exercise-videos-lifetime-unlimited-license-workout-yoga-animation-exercise-fitness-gym`
+
+- $599 regular, **$359 sale** ("SUMMER SALES JULY"), one-time payment, tax included
+- Code **`SUB10DISCOUNT`** = 10% off a first order → **~$323**
+- 2,500+ clips at 4K/60fps, plus **1,200+ green-screen versions** (what we key)
+- Includes **Cardio**, **Stretching**, and **Yoga** categories, and 600+ bodyweight
+  home exercises — the coverage gap that disqualified MoveKit
+- 4,500 start/finish illustrations and 1,500 written instructions (the latter may
+  improve our coaching cues)
+- All future weekly releases included free, forever
+
+**Operational traps, in order of how much they'd cost to get wrong:**
+
+1. **30-day download window.** Delivery is via Dropbox and their FAQ states files
+   are erased after 30 days. Download everything and back it up to two places
+   immediately. Do not treat their Dropbox as storage.
+2. **Ask for the no-logo version.** Logo encoding takes 4 business days; without a
+   logo you get express access. A burned-in logo is wrong for this app, and it can
+   be added later for free if you ever want it.
+3. **No refunds** on digital products — so validate the pipeline on the first batch
+   of files before assuming the rest are fine.
+4. Green-screen clips now live inside the bundle's Master Folder — grab those in
+   preference to the white-background versions wherever both exist.
+
+5. When buying, three things that make the pipeline work well:
    - Prefer **green-background** variants — they key cleanly onto the dark theme.
      White-background clips still work, they just sit on a light panel.
    - Take the **highest resolution offered**. `transcode.js` downscales to 480px;
