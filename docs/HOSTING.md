@@ -33,23 +33,41 @@ are *served at no charge*.
 
 GitHub Pages remains live and untouched. Both URLs work; nothing needs retiring.
 
-### R2 — not needed until there are clips to store
+### Account facts (needed for the Worker and signed URLs later)
+
+| | |
+|---|---|
+| Live app | `https://3s.wyster-desir.workers.dev` |
+| Account ID | `b28865e19bb98f931b851c3f2c475d16` |
+| R2 bucket | `3s-media` (Standard, Automatic location, **not** public) |
+| S3 API endpoint | `https://b28865e19bb98f931b851c3f2c475d16.r2.cloudflarestorage.com` |
+
+R2 subscription is active; billable usage $0.00 against a 10 GB free allowance.
+
+### R2 — done
 
 R2 is only required once you own media. It is **not** blocking anything today, so
 don't attach it before there's something to put in it.
 
-When you do need it, `dash.cloudflare.com → R2` shows a subscription screen. It
-reads **Total Due Now $0.00** and includes **10 GB/month free** (the whole clip
-library is ~0.015 GB), but clicking it accepts Cloudflare's terms and attaches an
-**auto-renewing subscription to your payment method**, which the agent will not
-do on your behalf. Click **Add R2 subscription to my account** yourself, then
-create a bucket named `3s-media` with public access **off**.
+Subscription added by the account owner (it accepts Cloudflare's terms and
+attaches an auto-renewing subscription to a payment method, so it is a user step
+by policy, not an agent one). Bucket `3s-media` created and verified empty and
+non-public.
 
 ### you: buy and upload the clips
 
-5. Buy from ExerciseAnimatic. Prefer **green-background** variants — they key
-   cleanly onto the dark theme. White-background clips still work, they just sit
-   on a light panel.
+5. Buy from ExerciseAnimatic. Three things that make the pipeline work well:
+   - Prefer **green-background** variants — they key cleanly onto the dark theme.
+     White-background clips still work, they just sit on a light panel.
+   - Take the **highest resolution offered**. `transcode.js` downscales to 480px;
+     starting from 4K gives a cleaner crop and key.
+   - **Keep the original filenames.** The transcoder maps filename slugs to
+     exercise ids automatically, and unmatched files are reported rather than
+     silently dropped. Don't pre-rename them.
+   - Consider a **~10 clip test batch first** (~$10) spanning one stretch, one
+     strength, one cardio move, and at least one green and one non-green
+     background. That validates the whole chain end to end before committing to
+     the full bundle.
 6. Put the source files in one folder and run:
    ```bash
    node tools/transcode.js /path/to/purchased/clips media
