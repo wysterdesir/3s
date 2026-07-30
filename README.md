@@ -78,19 +78,28 @@ Variety is stacked three deep, so consecutive workouts don't repeat:
 3. **A seeded shuffle** picks among the freshest candidates, so it isn't a rigid
    cycle either.
 
-In testing, six consecutive workouts touch 114 of the 114 exercises available at
-Home, and 117 of 119 at a gym.
+In testing, six consecutive workouts touch 184 of the 213 exercises available on
+the road and 223 of 300 at a gym.
 
 ---
 
 ## The animation engine
 
-There are no GIFs or videos. Every exercise is a handful of keyframed body poses
-in `js/exercises.js`, and `js/rig.js` interpolates between them with inverse
-kinematics keeping hands and feet planted where they belong. That means:
+Each exercise shows a licensed video clip where one is available and a drawn
+figure otherwise — `js/stage.js` picks per exercise, so the two coexist while
+clips are still being added, and a clip that fails to decode falls back rather
+than leaving a blank box.
 
-- The whole app is about 100 KB and works offline.
-- A new exercise is roughly six lines of data, not a video shoot.
+The drawn figure is keyframed body poses interpolated by `js/rig.js`, with
+inverse kinematics keeping hands and feet planted where they belong. That means:
+
+- The app works offline and stays small when no clips are hosted.
+- A pose loop is roughly six lines of data, not a video shoot.
+
+The library itself is now generated from the ExerciseAnimatic catalogue — see
+[docs/LIBRARY-REBUILD.md](docs/LIBRARY-REBUILD.md). The 117 hand-authored pose
+loops survive as the `ARCH` table in `js/exercises.js`: every generated exercise
+adopts the closest one for its fallback.
 
 A pose sets where the hips are, the torso and head angle, and IK targets for the
 hands and feet. Angles are degrees with `90` = straight up, and the ground line
@@ -99,16 +108,25 @@ centred on the circle that encloses every pose, so the figure fills the ring.
 
 ### Adding an exercise
 
-Append to the `EX` array in `js/exercises.js`:
+`js/exercises.js` is generated — edits to it are lost on the next
+`node tools/build-library.js`. To add an exercise, adjust the generator's
+classification and rerun it. Entries look like this:
 
 ```js
-{ id: 'squat', name: 'Bodyweight Squat', pool: 'strength', groups: ['legs'],
-  equip: [], tier: 1, cue: 'Chest up, sit back, knees track out', cycle: 3,
-  frames: [P(STAND, HANDS_CLASP), SQUAT_LOW] }
+{ id: 'bodyweight-squat', name: 'Bodyweight Squat', pool: 'strength',
+  groups: ['legs'], equip: [], tier: 1, arch: 'squat',
+  cue: 'Chest up, sit back, knees track out' }
 ```
 
-`frames` is a **closed loop** — the last frame interpolates back to the first, so
-`[stand, bottom]` gives you a full rep down and up for free. `dose` (stretch only) sets how long the move should run. `equip: []` means it
+`arch` names the pose loop the fallback figure animates, drawn from the `ARCH`
+table at the top of the file; `cycle`, `alt`, and `props` are inherited from it
+unless the entry sets them. To tune a loop by hand, edit
+`tools/catalogues/pose-loops.js` — the generator reads its poses from there, not
+from its own output.
+
+A loop's `frames` is **closed** — the last frame interpolates back to the first,
+so `[stand, bottom]` gives a full rep down and up for free. `dose` (stretch only)
+sets how long the move should run. `equip: []` means it
 works anywhere; anything listed (`dumbbell`, `barbell`, `bar`, `bench`, `band`,
 `wall`, `chair`) restricts it to locations that have it. `groups` are the slots a
 template can drop it into:
@@ -172,7 +190,7 @@ Drives headless Chrome over the DevTools Protocol at real phone dimensions
 (390×844): clicks through every screen, screenshots each into `tools/shots/`,
 reports console errors, checks for horizontal overflow, verifies the figure is
 actually animating, and runs the **ring-fit check** — it maps every joint of
-every keyframe of all 119 exercises through the live screen transform and
+every keyframe of all 300 exercises through the live screen transform and
 confirms none escapes the progress ring. Run this after changing the figure
 viewBox, `.figwrap`/`.ring` sizing, or adding poses that reach further than the
 existing ones.
@@ -185,7 +203,7 @@ Renders every pose in a pool to a contact-sheet PNG (first keyframe dim, last
 bright, so one image shows the whole movement). This is the fastest way to spot
 a pose authored wrong — it caught squats whose hips dropped without traveling
 back, a wall on the wrong side of the figure, and limbs sagging through the
-floor. Pass `stretch`, `strength`, or `sweat`; omit for all 119.
+floor. Pass `stretch`, `strength`, or `sweat`; omit for the whole library.
 
 Note `pose_sheet.py` hard-codes the viewBox to match `rig.js` — keep the two in
 sync or the sheet lies about framing.

@@ -1,32 +1,3 @@
 {
-  "_note": "Their filename slug (or noise-stripped core) -> our exercise id. Only needed where the names genuinely diverge; plurals and format tags are handled automatically. Add a line whenever transcode.js reports an unmatched file you want.",
-
-  "90-to-90-stretch": "90-90-switch",
-  "90-to-90-stretch-background": "90-90-switch",
-  "cat-stretch": "cat-cow",
-  "cobra-yoga-pose-hold": "cobra-hold",
-  "high-plank": "plank",
-  "hand-plank": "plank",
-  "elbow-side-plank": "side-plank",
-  "plank-shoulder-tap": "plank",
-  "standing-gastrocnemius-stretch": "calf-stretch-step",
-  "lunging-straight-leg-calf-stretch": "calf-stretch-step",
-  "hamstring-lying-straight-leg-stretch": "standing-ham-reach",
-  "lying-glute-stretch": "figure-4",
-  "middle-back-rotation-stretch": "supine-twist",
-  "kneeling-lat-floor-stretch": "child-pose",
-  "standing-one-arm-chest-stretch": "cross-body-shoulder",
-  "back-stretch-dynamic": "cat-cow",
-  "adductor-dynamic-stretch": "wide-fold",
-  "side-lying-floor-stretch": "supine-twist",
-  "fire-hydrant-circle": "hip-circles",
-  "pelvic-tilt-into-bridge": "glute-bridge-mob",
-  "superman-pull": "superman",
-  "good-morning": "good-morning",
-  "in-and-out-squat-jump": "squat-jump",
-  "criss-cross-jump": "cross-jacks",
-  "alternating-toe-tap": "toe-taps",
-  "heel-touche": "toe-taps",
-  "running": "sprint-place",
-  "bodyweight-squat": "squat"
+  "_note": "Hand-written overrides for tools/transcode.js: their filename slug (or noise-stripped core) -> our exercise id. Emptied when the library was rebuilt from the catalogue. js/exercises.js is now GENERATED from specific source files, and tools/catalogues/clips.json records exactly which file every exercise came from, so there is nothing left to guess — the previous entries all named hand-authored ids that no longer exist. Add a line here only for an exercise clips.json does not cover; entries naming an unknown id are ignored."
 }

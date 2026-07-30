@@ -46,9 +46,18 @@ for (const f of ['js/rig.js', 'js/exercises.js']) {
   vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), sandbox, { filename: f });
 }
 const EX = sandbox.window.S3.exercises.all;
+const EX_IDS = new Set(EX.map((e) => e.id));
 
 const mapPath = path.join(__dirname, 'catalogues', 'mapping.json');
 const mapping = fs.existsSync(mapPath) ? JSON.parse(fs.readFileSync(mapPath, 'utf8')) : {};
+
+/* Written by tools/build-library.js: exercise id -> the exact catalogue file the
+ * library was built from. Indexed the other way round here, by "<folder>/<file>",
+ * so a source path resolves to an exercise without any name matching. */
+const clipPath = path.join(__dirname, 'catalogues', 'clips.json');
+const clipIndex = {};
+const clipsById = fs.existsSync(clipPath) ? JSON.parse(fs.readFileSync(clipPath, 'utf8')) : {};
+for (const id of Object.keys(clipsById)) clipIndex[String(clipsById[id].file).toLowerCase()] = id;
 
 /* ---------- name matching ---------- */
 
@@ -92,15 +101,28 @@ for (const e of EX) {
 }
 const coreKeys = Object.keys(byCore).sort((a, b) => b.length - a.length);
 
-function resolveId(file, relDir) {
+function resolveId(file, rel) {
   const base = path.basename(file).replace(/\.[^.]+$/, '');
+
+  /* The generated library records the exact source file it chose for every
+   * exercise, so for those there is nothing to guess: look the path up and skip
+   * name matching entirely. Matching by name is what produced confident wrong
+   * pairings before, and it only remains here for hand-authored exercises and
+   * for bundles whose layout does not match the recorded one.
+   *
+   * `rel` is the path relative to the bundle root INCLUDING the filename, so the
+   * key is its last two segments — "<muscle folder>/<file>". */
+  const parts = String(rel).replace(/\\/g, '/').split('/');
+  const byPath = clipIndex[parts.slice(-2).join('/').toLowerCase()];
+  if (byPath) return byPath;
+
   const s = slug(base);
-  if (mapping[s]) return mapping[s];
-  if (byExact[s]) return byExact[s];
+  if (mapping[s]) return real(mapping[s]);
+  if (byExact[s]) return guard(byExact[s]);
 
   const c = core(base);
-  if (mapping[c]) return mapping[c];
-  if (byCore[c]) return byCore[c];
+  if (mapping[c]) return real(mapping[c]);
+  if (byCore[c]) return guard(byCore[c]);
 
   /* Substring fallback, longest core first. It must also COVER most of the source
    * name: 'wide push ups bodyweight' contains both 'wide-push-up' and 'push-up',
@@ -112,9 +134,25 @@ function resolveId(file, relDir) {
     if (k.length < 6) continue;
     if (!(c === k || c.includes('-' + k) || c.includes(k + '-'))) continue;
     const kTok = k.split('-').filter(Boolean);
-    if (kTok.length / cTok.length >= 0.6) return byCore[k];
+    if (kTok.length / cTok.length >= 0.6) return guard(byCore[k]);
   }
   return null;
+}
+
+/* mapping.json is hand-maintained and outlives the library it was written for:
+ * after the rebuild its entries still named exercises that no longer exist, and
+ * those phantom ids were counted as matched and would have been encoded. */
+function real(id) {
+  return id && EX_IDS.has(id) ? id : null;
+}
+
+/* An exercise that the library built from a recorded source already has its
+ * file, and the exact-path branch above would have returned it. Reaching here
+ * means some OTHER file matched it by name — which is how "Ab Crunches" ended up
+ * pointed at a dumbbell clip. Refuse it: a name match must never override the
+ * source the library was actually generated from. */
+function guard(id) {
+  return real(id) && !clipsById[id] ? id : null;
 }
 
 /* ---------- variant preference ---------- */

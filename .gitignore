@@ -12,6 +12,13 @@ media/
 *.webm
 *.mov
 
+# Same reasoning for their data. catalogue.json carries the vendor's full
+# step-by-step instructions for all 2,571 exercises, which is their dataset
+# rather than ours to republish. Regenerate it from the bundle in one command:
+#   py tools/extract-catalogue.py
+# clips.json and coverage.md stay tracked — those are our ids and our report.
+tools/catalogues/catalogue.json
+
 # OS noise
 Thumbs.db
 desktop.ini
