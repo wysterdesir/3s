@@ -109,6 +109,38 @@ bundle they sell; everything else is $1 per individual clip.
    stays false by default so a build without clips never requests a manifest it
    knows is absent.
 
+### If the bundle is too big to download (it will be)
+
+The bundle is hundreds of GB — 2,500 clips in 4K, 1080p, vertical, and green
+screen, plus illustrations. Dropbox builds folder downloads as a server-side zip
+with size and file-count limits, so a whole-folder download fails no matter how
+good the connection. That is a Dropbox limit, not a network problem, and
+retrying will not fix it.
+
+**You do not need the bundle. You need about 119 files.** Matching only requires
+filenames, not bytes, so plan the download first:
+
+1. Install the **Dropbox desktop app** and add the shared folder as
+   **online-only** (right-click → Make online-only, or leave Smart Sync default).
+   Windows shows the whole tree as zero-byte placeholders — you get every
+   filename without transferring content.
+2. Enumerate the tree into a text file (from the folder root):
+   ```bash
+   find . -name "*.mp4" > listing.txt        # or:  dir /s /b *.mp4 > listing.txt
+   ```
+3. Work out exactly which files matter:
+   ```bash
+   node tools/transcode.js --list listing.txt
+   ```
+   This writes `tools/download-list.txt` containing only the files we use.
+4. Mark **only those** as "Always keep on this device" (or download them
+   individually — single-file downloads avoid the zip path that is failing).
+5. Transcode as normal.
+
+Prefer the **1080p green-screen** versions if both exist. Everything is
+downscaled to 480x480 anyway, so 4K buys only a marginally cleaner crop at five
+times the bytes. 119 files at 1080p is roughly 1-2 GB instead of 100+ GB.
+
 ### filenames map to exercises automatically
 
 `transcode.js` matches a source filename to an exercise id by slug

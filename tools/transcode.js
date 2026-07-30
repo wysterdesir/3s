@@ -153,11 +153,29 @@ function walk(dir, rel, out) {
   return out;
 }
 
-console.log('scanning ' + SRC + ' ...');
-const files = walk(SRC, '', []);
-console.log(`found ${files.length} video files\n`);
+/* --list takes a plain text file of paths (one per line) instead of a directory.
+ * This is how we plan a download: the bundle is hundreds of GB, but matching only
+ * needs FILENAMES, not bytes. Enumerate the names, work out the ~119 files we
+ * actually use, and fetch only those. */
+const LIST = (() => {
+  const i = args.indexOf('--list');
+  return i >= 0 && args[i + 1] ? args[i + 1] : null;
+})();
+
+let files;
+if (LIST) {
+  const lines = fs.readFileSync(LIST, 'utf8').split(/\r?\n/)
+    .map((l) => l.trim()).filter((l) => l && VIDEO.test(l));
+  files = lines.map((l) => ({ full: l, rel: l.replace(/^.*?[\\/](?=[^\\/]*[\\/])/, '') }));
+  console.log(`read ${files.length} video paths from ${LIST}\n`);
+} else {
+  console.log('scanning ' + SRC + ' ...');
+  files = walk(SRC, '', []);
+  console.log(`found ${files.length} video files\n`);
+}
+
 if (!files.length) {
-  console.error('No video files found. Check the path, and note nested folders are walked automatically.');
+  console.error('No video files found. Check the path; nested folders are walked automatically.');
   process.exit(1);
 }
 
@@ -194,15 +212,25 @@ if (missing.length) {
   console.log('  { "their-file-slug": "our-exercise-id" }');
 }
 
-if (DRY) {
-  console.log('\n--- dry run, nothing encoded ---');
+if (DRY || LIST) {
+  console.log('\n--- nothing encoded ---');
   console.log('chosen sources:');
-  matchedIds.sort().slice(0, 40).forEach((id) => {
+  const show = DRY && !LIST ? 40 : matchedIds.length;
+  matchedIds.sort().slice(0, show).forEach((id) => {
     const b = best[id];
     const tags = [b.variant.green ? 'green' : '', b.variant.fourK ? '4K' : ''].filter(Boolean).join('+');
     console.log(`  ${id.padEnd(24)} ${tags.padEnd(9)} ${b.file.rel}`);
   });
-  if (matchedIds.length > 40) console.log(`  ... and ${matchedIds.length - 40} more`);
+  if (matchedIds.length > show) console.log(`  ... and ${matchedIds.length - show} more`);
+
+  /* The whole point of --list: emit exactly the files worth downloading, so a
+   * 100+ GB bundle becomes a ~1-2 GB fetch. */
+  if (LIST) {
+    const outFile = path.join(__dirname, 'download-list.txt');
+    fs.writeFileSync(outFile, matchedIds.sort().map((id) => best[id].file.full).join('\n') + '\n');
+    console.log(`\nwrote ${matchedIds.length} paths to ${outFile}`);
+    console.log('Download ONLY these. Everything else in the bundle is unused.');
+  }
   process.exit(0);
 }
 
