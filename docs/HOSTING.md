@@ -267,22 +267,40 @@ Not legal advice — worth a short consult before the first sale.
 
 ---
 
-## Cutover checklist (GitHub Pages → Cloudflare Pages)
-
-Keep both live until the last step.
+## Cutover checklist (GitHub Pages → Cloudflare)
 
 - [x] Cloudflare deploy succeeds and the URL loads
 - [x] `node tools/shoot.js https://3s.wyster-desir.workers.dev/` — clean
+- [x] Clips serve from R2 through the Worker; 300/300 resolve, no console errors
+- [x] Verified the two hosts degrade as designed (below)
 - [ ] Run a full session on your phone from the new URL
-- [ ] Custom domain attached (Cloudflare DNS makes this free), e.g. `3smethod.com`
 - [ ] Home-screen install works from the new URL
+- [ ] Custom domain attached (Cloudflare DNS makes this free), e.g. `3smethod.com`
 - [ ] Only then: retire the GitHub Pages deployment
 
-**Until the cutover, keep doing your workouts on the GitHub Pages install.** A PWA
-is tied to its origin, so installing the `workers.dev` version creates a second
-app with its own empty `localStorage` — your streak, level, and exercise history
-would not follow. Open the new URL in a browser tab to sanity-check it, but don't
-make it your daily app yet.
+### The two hosts, verified
 
-The cutover is worth doing once, to a custom domain, with progress carried over.
-Say the word and I'll add export/import of progress first so nothing is lost.
+| | Worker | GitHub Pages |
+|---|---|---|
+| Exercises | 300 | 300 |
+| `CONFIG.enabled` | true | false |
+| Clips | 300, played | none — drawn figure |
+| Console | clean | clean (never requests a manifest it lacks) |
+
+Pages is now the degraded one: same 300 exercises, but every one falls back to an
+archetype pose loop rather than its clip. That is the intended behaviour for a
+host that cannot legally carry the media, not a bug.
+
+### Progress does not follow the origin
+
+A PWA is tied to its origin, so installing from `workers.dev` creates a second app
+with its own empty `localStorage` — streak, level, and history stay behind on the
+Pages install.
+
+Nothing is destroyed: the old data remains under the Pages origin, so it can still
+be carried over later. Doing that needs export/import in the app itself, because
+the data lives in the browser on the device that recorded it and is not reachable
+from anywhere else.
+
+Worth building before attaching a custom domain, since that is a third origin and
+the same reset happens again.
