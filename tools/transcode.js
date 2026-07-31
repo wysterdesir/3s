@@ -29,6 +29,7 @@ const SRC = positional[0];
 const OUT = positional[1] || 'media';
 const DRY = flags.has('--dry-run');
 const PREFER_FEMALE = flags.has('--female');
+const FORCE = flags.has('--force');            // re-encode clips that already exist
 const LIMIT = (() => {
   const i = args.indexOf('--limit');
   return i >= 0 && args[i + 1] ? parseInt(args[i + 1], 10) : Infinity;
@@ -359,13 +360,38 @@ function analyse(file) {
   return { bg: bg, greenish: greenish, box: box, sampleW: W, sampleH: H };
 }
 
+/* Whether an already-encoded clip is keyed. VP9 carries alpha in a side channel
+ * that does not show up in pix_fmt, so the container tag is the signal. */
+function fitOf(file) {
+  try {
+    const out = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'stream_tags=alpha_mode',
+      '-of', 'default=nw=1:nk=1', file], { encoding: 'utf8' });
+    return out.trim() === '1' ? 'alpha' : 'card';
+  } catch (e) {
+    return 'alpha';
+  }
+}
+
 const clips = {};
-let n = 0;
+let n = 0, kept = 0;
 const todo = matchedIds.sort().slice(0, LIMIT);
 console.log(`\nencoding ${todo.length} clips -> ${outDir}\n`);
 
 for (const id of todo) {
   const src = best[id].file.full;
+
+  /* Re-encoding 300 clips takes hours, and most regenerations of the library
+   * change only a handful of entries. Keep what is already there unless --force
+   * says otherwise; the manifest is still rebuilt from scratch either way, so a
+   * skipped clip is not a stale clip. */
+  const existing = path.join(outDir, id + '.webm');
+  if (!FORCE && fs.existsSync(existing) && fs.statSync(existing).size > 2048) {
+    clips[id] = { file: id + '.webm', fit: fitOf(existing) };
+    n++;
+    kept++;
+    continue;
+  }
+
   let a, dim;
   try { dim = probe(src); a = analyse(src); }
   catch (e) { console.log(`${id.padEnd(24)} SKIP (unreadable: ${e.message.split('\n')[0]})`); continue; }
@@ -403,4 +429,14 @@ fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify({
 
 const total = Object.values(clips).reduce((t, c) => t + fs.statSync(path.join(outDir, c.file)).size, 0);
 console.log(`\n${n} clips, ${(total / 1048576).toFixed(1)} MB total -> ${outDir}`);
+if (kept) console.log(`${kept} already encoded and kept; ${n - kept} newly encoded (--force re-encodes all).`);
 console.log(`${EX.length - n} exercises keep the drawn figure.`);
+
+/* Clips left behind by a previous library are dead weight in the upload and
+ * would be served to nobody. Name them rather than deleting silently. */
+const live = new Set(Object.values(clips).map((c) => c.file));
+const orphans = fs.readdirSync(outDir).filter((f) => f.endsWith('.webm') && !live.has(f));
+if (orphans.length) {
+  console.log(`\n${orphans.length} orphaned clip(s) from an earlier library — delete before uploading:`);
+  orphans.forEach((f) => console.log('  ' + f));
+}

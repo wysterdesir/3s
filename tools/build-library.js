@@ -126,6 +126,38 @@ const EQUIP_NAME = [
 ];
 const EQUIP_DROP = /\bkettlebell|\bcable|\bmachine|\bsmith\b|\bexercise ball|\bsled\b|\btyre\b|\btire\b|\bbattle rope|\bjump rope|\bskipping rope|\bez ?bar|\bplate\b|\bmed(icine)? ball|\bbosu\b|\btrx\b|\bsuspension|\blandmine|\brebounder|\bairbike|\belliptical|\bergometer|\btreadmill|\bab ?wheel|\bab ?roller|\brower\b|\browing\b|\bski erg|\bhyperextension bench|\bpreacher\b|\bpec ?deck|\bhack squat|\bleg press|\bleg extension|\bleg curl machine|\bassisted\b|\blat pull ?down|\bpulley\b|\bparallette|\bdip bars?\b|\brings?\b|\bfoam roller|\bblocks?\b|\bbolster|\bstrap\b|\btowel\b|\bslider|\bhandle|\bball\b|\bstick\b|\bpole\b|\bcushion|\bpillow|\bstep ?mill|\bvest\b|\bchain\b|\bladder\b|\bhurdle\b|\bcone\b|\bparachute|\btrampoline|\btrap bar|\bhex bar|\bmonkey bar|\bswiss bar|\bsafety bar/;
 
+/* Findings from the verification contact sheet (tools/contact-sheet.py). Both
+ * equipment signals read the name, so a prop that appears only in the video is
+ * invisible to them — the picture is the only place these show up. Re-review the
+ * sheets after any change here and extend the lists rather than loosening them.
+ *
+ * Dropped: props we do not model, exercises needing a second person, and
+ * sport-skill or ambulatory clips that are not a follow-along workout move. */
+const EXCLUDE = [
+  [/\bair swing\b/, 'swings a wooden training apparatus'],
+  [/\bsandbag\b/, 'sandbag'],
+  [/\brack pull\b/, 'power rack'],
+  [/with partner\b|\bpartner\b/, 'needs a second person'],
+  [/\bmulti.?hip\b/, 'multi-hip machine'],
+  [/\bkipping\b/, 'kipping needs a bar and is a competition skill'],
+  [/\bchest dip\b/, 'dip station, mislabelled as a chair'],
+  [/\bl.?sit hold\b/, 'parallettes, mislabelled as bodyweight'],
+  [/\btennis\b|\bbasketball\b|\bgolf\b|\bbaseball\b|\bboxing bag\b/, 'sport skill, not a workout move'],
+  [/^walking$|^jogging$|\bgorilla walk\b|\bbriskly walking\b/, 'ambulatory, not an interval'],
+  [/\blying neck (curl|extension)\b/, 'neck training is out of scope'],
+  [/\bcelebratory\b/, 'not an exercise'],
+];
+
+/* Equipment the clip shows but neither signal names. Keeps a good exercise
+ * instead of dropping it — but it must stop claiming to be bodyweight, or the
+ * location picker offers it to someone in a hotel room. */
+const EQUIP_FIX = [
+  [/\bplank iytw\b/, ['dumbbell']],
+  [/\bbent over twist\b/, ['barbell']],
+  [/\bcopenhagen plank\b/, ['bench']],
+  [/\blow box quick feet\b|\bincline push.?up \(?on box\)?/, ['bench']],
+];
+
 const FOLDER_POOL = {
   'Stretching - Mobility': 'stretch',
   'Yoga': 'stretch',
@@ -416,6 +448,10 @@ function equipFor(item) {
   const sheetRaw = (item.equipment || '').toLowerCase().trim();
 
   if (EQUIP_DROP.test(name)) return { drop: 'kit-in-name' };
+  for (const [re, why] of EXCLUDE) if (re.test(name.trim())) return { drop: 'review: ' + why };
+  for (const [re, equip] of EQUIP_FIX) {
+    if (re.test(name)) return { equip: equip, source: 'contact-sheet', conflict: null };
+  }
 
   /* Filename first — it describes the clip that will actually be on screen. */
   const fromName = [];
@@ -561,17 +597,24 @@ function doseFor(name) {
   return 48;
 }
 
-/* Tier 3 is gated behind level 2, so this is also where skill work belongs: a
- * planche or a back lever must never be handed to a level-1 Travel session. */
-const PLYO = /\bjump|\bhop\b|plyo|explosive|burpee|\bmuscle ?up|pistol|hand ?stand|\bclap\b|\bsprint|\btuck\b|\bbound|\bskater|one arm|single arm push|\bsnatch|\bjerk\b|\bclean\b|\blever\b|planche|\bflag\b|archer|\bdragon|\bshrimp\b|\bl.?sit\b|\bfront lever|\bhuman flag/;
-const COMPOUND = /squat|deadlift|press|\brow\b|pull ?up|chin ?up|thruster|lunge|clean|snatch|dip\b/;
+/* Tier 3 is gated behind level 2, so it holds the genuinely hard work: skill
+ * moves, true plyometrics, and anything unilateral under load. */
+const TIER3 = /\bclap\b|one arm|single arm push|planche|\blever\b|\bflag\b|pistol|muscle ?up|hand ?stand|\bl.?sit\b|archer|\bdragon|\bshrimp\b|depth jump|box jump|tuck jump|\bplyo|explosive|\bsnatch|\bjerk\b|\bclean\b|burpee|\bsprint|\bcopenhagen/;
+
+/* Beginner cardio staples. Without this, matching `\bjump` alone pushed jumping
+ * jacks, high knees and skipping to tier 3 and locked the most basic moves in
+ * the app behind level 2 — a level-1 Sweat session was left with the leftovers. */
+const TIER1_BASIC = /jumping jack|criss ?cross jack|\bjacks?\b|high knee|butt kick|\brunning\b|\bskipping\b|\bmarch|toe tap|fast feet|\bwalking\b|step touch|\bshuffle/;
+
+const TIER2_MOVE = /\bjump|\bhop\b|\bbound|skater|\bleap|squat thrust|thruster|\bsquat\b|deadlift|press|\brow\b|pull ?up|chin ?up|\blunge|\bdips?\b/;
 
 function tierFor(name, equip, pool) {
   const low = name.toLowerCase();
-  if (pool !== 'stretch' && PLYO.test(low)) return 3;
+  if (pool === 'stretch') return 1;
+  if (TIER3.test(low)) return 3;
+  if (TIER1_BASIC.test(low)) return 1;
   if (equip.length && !equip.every((e) => e === 'wall' || e === 'chair')) return 2;
-  if (COMPOUND.test(low)) return 2;
-  return 1;
+  return TIER2_MOVE.test(low) ? 2 : 1;
 }
 
 /* One short coaching line. Their tips are numbered prose; take the first
@@ -639,7 +682,7 @@ const loops = extractLoops(POSE_SRC);
 
 /* ---------- build candidates ---------- */
 
-const dropped = { gender: 0, equip: 0, folder: 0 };
+const dropped = { gender: 0, equip: 0, folder: 0, review: 0 };
 const conflicts = [];
 let candidates = [];
 
@@ -661,7 +704,7 @@ for (const item of catalogue.items) {
   if (!FOLDER_POOL[item.folder]) { dropped.folder++; continue; }
 
   const eq = equipFor(item);
-  if (eq.drop) { dropped.equip++; continue; }
+  if (eq.drop) { (eq.drop.startsWith('review:') ? dropped.review++ : dropped.equip++); continue; }
 
   const { pool, name, groups } = classify(item);
   if (eq.conflict) conflicts.push(`${item.folder}/${item.file} — filename says ${eq.equip.join('+') || 'bodyweight'}, ${eq.conflict}`);
@@ -729,7 +772,11 @@ const deduped = [...byKey.values()];
 const QUOTA = {
   stretch: { hips: 24, spine: 20, shoulders: 20, hams: 16, ankles: 10 },
   strength: { legs: 22, core: 20, push: 18, pull: 18, shoulders: 18, arms: 16, hinge: 14, carry: 12 },
-  sweat: { impact: 22, floor: 10, low: 12, upper: 12, core: 8 },
+  /* Sweat's heaviest single session asks for 12 impact slots and 6 floor, and a
+   * move may repeat up to six times, so these sit well clear of demand. Setting
+   * them to whatever supply happens to be makes the shortfall check circular —
+   * it would then only ever report "supply equals supply". */
+  sweat: { impact: 18, floor: 8, low: 12, upper: 12, core: 8 },
 };
 /* Travel is the binding case: wall and chair only. Every group must still fill a
  * session without repeating, so hold a floor of bodyweight options in each. */
@@ -960,6 +1007,7 @@ R('|---|---|');
 R(`| Clips delivered (HD 720p tree) | ${catalogue.counts.files} |`);
 R(`| Dropped — other cast (\`--cast ${CAST}\`) | ${dropped.gender} |`);
 R(`| Dropped — equipment we do not model | ${dropped.equip} |`);
+R(`| Dropped — contact-sheet review | ${dropped.review} |`);
 R(`| Candidates | ${candidates.length} |`);
 R(`| After de-duplicating variants | ${deduped.length} |`);
 R(`| **Curated library** | **${library.length}** |`);
