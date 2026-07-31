@@ -66,9 +66,15 @@ export default {
     /* R2 returns an object with no body when an If-None-Match / If-Modified-Since
      * condition says the client's copy is still good. */
     if (object.body === undefined) return new Response(null, { status: 304, headers });
+
+    if (object.size !== undefined) headers.set('content-length', String(object.size));
     if (request.method === 'HEAD') return new Response(null, { headers });
 
-    if (object.range && object.size !== undefined) {
+    /* Only a request that actually asked for a range gets a 206. R2 populates
+     * `object.range` even on a full read, so keying off it alone made every
+     * response a 206 — which is wrong for a plain GET, and misleads any client
+     * or cache that treats partial content differently. */
+    if (range && object.range && object.size !== undefined) {
       const offset = object.range.offset ?? 0;
       const length = object.range.length ?? (object.size - offset);
       const end = offset + length - 1;

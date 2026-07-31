@@ -44,15 +44,64 @@ GitHub Pages remains live and untouched. Both URLs work; nothing needs retiring.
 
 R2 subscription is active; billable usage $0.00 against a 10 GB free allowance.
 
-### R2 — done
-
-R2 is only required once you own media. It is **not** blocking anything today, so
-don't attach it before there's something to put in it.
+### R2 — done, and now populated
 
 Subscription added by the account owner (it accepts Cloudflare's terms and
 attaches an auto-renewing subscription to a payment method, so it is a user step
-by policy, not an agent one). Bucket `3s-media` created and verified empty and
-non-public.
+by policy, not an agent one). Bucket `3s-media` created **non-public**, and it
+stays that way.
+
+**The bucket is never exposed directly.** `worker/index.js` sits in front of the
+app and serves `/media/*` by reading the bucket; nothing else can reach it. Three
+reasons this beats a public bucket or an `r2.dev` URL:
+
+- The licence forbids distributing raw files, and a public bucket is
+  distribution. Behind the Worker, the clips are only ever delivered to the app.
+- Same-origin, so there is no CORS policy to get wrong.
+- The Phase 1 entitlement check has exactly one place to live — every clip
+  request already passes through it.
+
+`/media/` is also where the dev server has the clips on disk, so the app uses one
+path in every environment. `js/media.js` decides `enabled` from the hostname:
+GitHub Pages genuinely has no media and must not request a manifest it cannot
+have, while the Worker and localhost both do.
+
+To push clips to the bucket:
+
+```bash
+wrangler login                    # once, in your own terminal
+node tools/upload-media.js        # ~109 MB, resumable
+```
+
+It uses wrangler's OAuth session rather than an S3 access key, so no long-lived
+secret lands on the machine. `wrangler r2 object` has no `list` subcommand, so
+resumption is tracked in a local ledger at `media/.upload-state.json`; `--force`
+ignores it and re-sends everything, which is also the repair path if the bucket
+and the ledger disagree.
+
+### The deploy hazard worth knowing about
+
+`assets.directory` is the repo root, and **wrangler reads `.assetsignore`, not
+`.gitignore`**. Anything sitting in the working directory at deploy time is a
+candidate to be published — including files git never sees. `media/` is 109 MB of
+licensed clips that exist locally on the machine that built them, so publishing
+it as static assets would put the raw files on a public URL: precisely what the
+licence forbids and what the private bucket exists to prevent.
+
+`.assetsignore` therefore excludes `media`, `media-samples`, and the video
+extensions outright, alongside the toolchain and docs.
+
+Verify rather than trust it. Upload a version without promoting it, then probe
+for a file that exists locally but was never sent to R2:
+
+```bash
+wrangler versions upload
+curl -I <preview-url>/media/.upload-state.json    # must be 404
+curl -I <preview-url>/tools/build-library.js      # must be 404
+```
+
+A 200 on either means `.assetsignore` is not doing its job and the deploy must
+not be promoted.
 
 ### you: buy and upload the clips
 
@@ -94,20 +143,21 @@ bundle they sell; everything else is $1 per individual clip.
      strength, one cardio move, and at least one green and one non-green
      background. That validates the whole chain end to end before committing to
      the full bundle.
-6. Put the source files in one folder and run:
+6. Point the transcoder at the bundle:
    ```bash
-   node tools/transcode.js /path/to/purchased/clips media
+   node tools/transcode.js "/path/to/bundle" media
    ```
    This crops to the figure, keys green backgrounds, scales to 480px, encodes VP9
-   (with alpha where keyed), and writes `media/manifest.json`. Expect **100–140 KB
-   per exercise** — roughly 15 MB for the full library.
-7. Upload the contents of `media/` to the `3s-media` bucket (drag-and-drop in the
-   dashboard is fine at this size).
-8. In `js/media.js` set `CONFIG.enabled = true` and point `CONFIG.base` at the
-   bucket's public or signed URL. Those two lines are the **only** code change
-   needed — every clip URL in the app is built in that one function. `enabled`
-   stays false by default so a build without clips never requests a manifest it
-   knows is absent.
+   (with alpha where keyed), and writes `media/manifest.json`. The real library
+   came out at **~365 KB per exercise, 109 MB for 300** — the earlier 15 MB
+   estimate assumed a much smaller library and shorter clips.
+
+   It keeps clips it has already encoded, so regenerating the library costs only
+   the entries that changed, and it names orphaned clips from a previous library
+   rather than letting them ride along into the upload.
+7. `node tools/upload-media.js` — see the R2 section above.
+8. No code change needed. `js/media.js` already points at `/media/` and enables
+   itself everywhere except GitHub Pages.
 
 ### If the bundle is too big to download (it will be)
 

@@ -1,14 +1,29 @@
-# Files in this repo that should not be published as static assets. The app is a
-# handful of files at the root; everything below is toolchain, documentation, or
-# build config that has no reason to be fetchable.
+# What must NOT be published as a static asset.
+#
+# wrangler reads this file, not .gitignore, so anything present in the working
+# directory at deploy time is a candidate — including files git never sees.
+#
+# media/ is the dangerous one. It holds ~109 MB of licensed clips that exist
+# locally but must only ever reach users through the Worker reading the private
+# R2 bucket. Publishing them as static assets would put the raw files on a public
+# URL, which is the exact thing the ExerciseAnimatic licence forbids.
+media
+media-samples
+*.mp4
+*.webm
+*.mov
+
+# Toolchain, docs, and build config: no reason to be fetchable.
 worker
 tools
 docs
 node_modules
+.git
+.wrangler
+.claude
 wrangler.jsonc
 package.json
 package-lock.json
 README.md
 .assetsignore
 .gitignore
-.claude

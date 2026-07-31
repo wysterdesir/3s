@@ -28,7 +28,32 @@ const BUCKET = (() => {
 })();
 const CONCURRENCY = 6;
 
-const WRANGLER = process.platform === 'win32' ? 'wrangler.cmd' : 'wrangler';
+/* Run wrangler's JS entry point under this same node, rather than the shim on
+ * PATH. On Windows the shim is a .cmd, which execFile cannot start without
+ * shell: true — and turning the shell on would mean quoting paths by hand, which
+ * this repo lives under a directory with a space in it. Resolving the module
+ * sidesteps both problems and behaves identically on every platform. */
+const WRANGLER_JS = (() => {
+  const roots = [
+    path.join(root, 'node_modules', 'wrangler', 'bin', 'wrangler.js'),
+    path.join(process.env.APPDATA || '', 'npm', 'node_modules', 'wrangler', 'bin', 'wrangler.js'),
+    path.join(process.env.HOME || '', '.npm-global', 'lib', 'node_modules', 'wrangler', 'bin', 'wrangler.js'),
+    '/usr/local/lib/node_modules/wrangler/bin/wrangler.js',
+  ];
+  for (const p of roots) if (p && fs.existsSync(p)) return p;
+  return null;
+})();
+
+if (!WRANGLER_JS) {
+  console.error('could not find wrangler. Install it with:  npm install -g wrangler');
+  process.exit(2);
+}
+
+/* Every wrangler call goes through here so the argument list stays a real array
+ * and never becomes a shell string. */
+function wrangler(args, opts = {}) {
+  return [process.execPath, [WRANGLER_JS, ...args], opts];
+}
 
 if (!fs.existsSync(path.join(MEDIA, 'manifest.json'))) {
   console.error('no media/manifest.json — run tools/transcode.js first');
@@ -56,7 +81,8 @@ if (missing.length) {
 
 function auth() {
   try {
-    const out = execFileSync(WRANGLER, ['whoami'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    const [cmd, args] = wrangler(['whoami']);
+    const out = execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
     if (/not authenticated/i.test(out)) return null;
     const m = /([\w.+-]+@[\w.-]+)/.exec(out);
     return m ? m[1] : 'authenticated';
@@ -65,27 +91,23 @@ function auth() {
   }
 }
 
-/* What is already in the bucket, so a resumed run does not re-send it. */
-function remoteIndex() {
-  const index = new Map();
-  let cursor = null;
-  for (;;) {
-    const a = ['r2', 'object', 'list', BUCKET, '--remote'];
-    if (cursor) a.push('--cursor', cursor);
-    let out;
-    try {
-      out = execFileSync(WRANGLER, a, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 32 << 20 });
-    } catch (e) {
-      return null;                       // older wrangler, or no list permission
-    }
-    const json = out.slice(out.indexOf('{'));
-    let parsed;
-    try { parsed = JSON.parse(json); } catch (e) { return null; }
-    for (const o of parsed.objects || []) index.set(o.key, o.size);
-    if (!parsed.truncated || !parsed.cursor) break;
-    cursor = parsed.cursor;
-  }
-  return index;
+/* Which files this machine has already sent, so an interrupted run resumes.
+ *
+ * A bucket listing would be the authoritative answer, but `wrangler r2 object`
+ * offers only get, put and delete — there is no list — and the alternative (the
+ * S3 API) needs a long-lived access key, which is the thing this script exists
+ * to avoid. So the ledger is local: filename plus size, written as each upload
+ * succeeds. `--force` ignores it, which is also the repair path if the bucket
+ * and the ledger ever disagree. */
+const LEDGER = path.join(MEDIA, '.upload-state.json');
+
+function readLedger() {
+  if (FORCE || !fs.existsSync(LEDGER)) return {};
+  try { return JSON.parse(fs.readFileSync(LEDGER, 'utf8')); } catch (e) { return {}; }
+}
+
+function writeLedger(state) {
+  fs.writeFileSync(LEDGER, JSON.stringify({ bucket: BUCKET, sent: state }, null, 1));
 }
 
 function put(key, file) {
@@ -97,13 +119,28 @@ function put(key, file) {
     const cache = key.endsWith('.json')
       ? 'no-cache'
       : 'public, max-age=31536000, immutable';
-    execFile(WRANGLER, ['r2', 'object', 'put', `${BUCKET}/${key}`, '--file', file,
-      '--content-type', type, '--cache-control', cache, '--remote'],
-    { encoding: 'utf8', maxBuffer: 8 << 20 }, (err, stdout, stderr) => {
+    const [cmd, args] = wrangler(['r2', 'object', 'put', `${BUCKET}/${key}`, '--file', file,
+      '--content-type', type, '--cache-control', cache, '--remote']);
+    execFile(cmd, args, { encoding: 'utf8', maxBuffer: 8 << 20 }, (err, stdout, stderr) => {
       if (err) reject(new Error((stderr || stdout || err.message).trim().split('\n').slice(-3).join(' ')));
       else resolve();
     });
   });
+}
+
+/* One clip in 300 failed on the first real run — a transient error, not a bad
+ * file, since the same upload succeeded immediately afterwards. At this size that
+ * is a nuisance; on a larger library it would fail most runs. Retry a few times
+ * with a widening gap before treating it as real. */
+async function withRetry(fn, attempts = 4) {
+  let last;
+  for (let i = 0; i < attempts; i++) {
+    try { return await fn(); } catch (e) {
+      last = e;
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 500 * 2 ** i));
+    }
+  }
+  throw last;
 }
 
 async function main() {
@@ -118,15 +155,11 @@ async function main() {
   console.log(`authenticated as ${who}`);
   console.log(`bucket: ${BUCKET}`);
 
-  const remote = FORCE ? new Map() : remoteIndex();
-  if (remote === null) console.log('could not list the bucket — uploading everything');
-  else console.log(`already in the bucket: ${remote.size} object(s)`);
+  const ledger = readLedger();
+  const sent = ledger.bucket === BUCKET ? (ledger.sent || {}) : {};
+  if (Object.keys(sent).length) console.log(`previously uploaded from here: ${Object.keys(sent).length}`);
 
-  const todo = clipFiles.filter((f) => {
-    if (FORCE || !remote) return true;
-    const size = remote.get(f);
-    return size === undefined || size !== fs.statSync(path.join(MEDIA, f)).size;
-  });
+  const todo = clipFiles.filter((f) => sent[f] !== fs.statSync(path.join(MEDIA, f)).size);
 
   const bytes = todo.reduce((t, f) => t + fs.statSync(path.join(MEDIA, f)).size, 0);
   console.log(`\n${todo.length} clip(s) to upload (${(bytes / 1e6).toFixed(1)} MB); ` +
@@ -141,8 +174,12 @@ async function main() {
       const f = queue.shift();
       if (!f) return;
       try {
-        await put(f, path.join(MEDIA, f));
+        await withRetry(() => put(f, path.join(MEDIA, f)));
+        sent[f] = fs.statSync(path.join(MEDIA, f)).size;
         done++;
+        /* Persist as we go: the whole point of the ledger is surviving an
+         * interruption, and one written at the end would not. */
+        if (done % 10 === 0) writeLedger(sent);
         if (done % 20 === 0 || done === todo.length) console.log(`  ${done}/${todo.length}`);
       } catch (e) {
         failed.push(`${f}: ${e.message}`);
@@ -150,6 +187,7 @@ async function main() {
     }
   }
   await Promise.all(Array.from({ length: Math.min(CONCURRENCY, Math.max(1, todo.length)) }, worker));
+  writeLedger(sent);
 
   if (failed.length) {
     console.error(`\n${failed.length} upload(s) failed — manifest NOT published:`);
@@ -161,7 +199,7 @@ async function main() {
   /* Last, and only once every clip it references is in place. */
   await put('manifest.json', path.join(MEDIA, 'manifest.json'));
   console.log(`\nuploaded ${done} clip(s) + manifest.json to ${BUCKET}`);
-  console.log('next: point CONFIG.base in js/media.js at the bucket origin and set enabled: true');
+  console.log('next: wrangler versions upload, check the preview URL, then wrangler deploy');
 }
 
 main().catch((e) => { console.error(e.message || e); process.exit(1); });
