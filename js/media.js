@@ -17,17 +17,33 @@
   'use strict';
 
   var CONFIG = {
-    /* Flip to true on a deployment that actually serves clips. Left false so the
-     * public build does not fetch a manifest it knowingly does not have — the
-     * request would 404 into the console on every load and bury real errors. */
+    /* Set just below, per host. */
     enabled: false,
 
-    /* Static path today. Later: an endpoint that returns a signed URL, e.g.
-     * 'https://api.3smethod.com/clip'. Keep it relative so the app is portable
-     * between hosts without a code change. */
+    /* Clips come from the app's own origin, under the same path in every
+     * environment: locally the dev server serves media/ off disk, and on the
+     * Worker deployment the same path is read out of the private R2 bucket (see
+     * worker/index.js). Keeping one path means nothing environment-specific
+     * leaks into the app.
+     *
+     * The bucket is never public — the licence forbids distributing the raw
+     * files — and same-origin means there is no CORS policy to get wrong.
+     *
+     * Phase 1 changes this to an endpoint returning a short-lived signed URL;
+     * mediaUrl() below is the only place a clip URL is built. */
     base: 'media',
     manifest: 'media/manifest.json'
   };
+
+  /* Everywhere except GitHub Pages, which has no media: licensed clips never
+   * enter the repo, so there the manifest genuinely is absent and requesting it
+   * would 404 into the console on every load and bury real errors.
+   *
+   * Deciding this at runtime keeps one artifact working on every host, rather
+   * than a build step whose only job is to flip a boolean. */
+  if (typeof location !== 'undefined' && !/(^|\.)github\.io$/.test(location.hostname)) {
+    CONFIG.enabled = true;
+  }
 
   var manifest = null;      // exerciseId -> { file, fit? }
   var ready = false;

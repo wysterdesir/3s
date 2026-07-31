@@ -1,0 +1,14 @@
+# Files in this repo that should not be published as static assets. The app is a
+# handful of files at the root; everything below is toolchain, documentation, or
+# build config that has no reason to be fetchable.
+worker
+tools
+docs
+node_modules
+wrangler.jsonc
+package.json
+package-lock.json
+README.md
+.assetsignore
+.gitignore
+.claude

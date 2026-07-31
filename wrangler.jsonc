@@ -1,0 +1,37 @@
+{
+  // 3S — Worker + static assets.
+  //
+  // The app was first deployed from the dashboard as an assets-only Worker. This
+  // file makes that deployment reproducible AND adds the one thing the dashboard
+  // cannot express: an R2 binding, so exercise clips are served from the app's
+  // own origin instead of a public bucket.
+  //
+  // `run_worker_first` is left off, so requests that match a static asset never
+  // invoke the script — the HTML, JS and CSS keep being served straight from the
+  // asset layer at no charge, and only /clip/* costs an invocation.
+  //
+  // Before the first deploy from this file, check it against the existing
+  // dashboard settings (Workers & Pages -> 3s -> Settings). A mismatch in `name`
+  // would create a SECOND Worker rather than updating the live one.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "3s",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-07-01",
+
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS"
+  },
+
+  // Private bucket. Its contents reach users only through worker/index.js.
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "3s-media"
+    }
+  ],
+
+  "observability": {
+    "enabled": true
+  }
+}
