@@ -8,7 +8,7 @@
 
   /* Shown in Settings. Bump with sw.js CACHE on every release so "which build am
    * I actually running?" is answerable from the phone instead of by guessing. */
-  var BUILD = '2026-08-01 · v13';
+  var BUILD = '2026-08-01 · v14';
 
   /* ---------- state ---------- */
 
@@ -176,6 +176,18 @@
     document.body.setAttribute('data-kind', item.kind);
 
     if (item.kind === 'work') {
+      /* Count the move now, as it starts, rather than when the session ends.
+       *
+       * The picker orders candidates by how often they have been used, so usage
+       * IS the variety engine. Recording it only on completion meant an
+       * abandoned session taught it nothing, and anyone starting sessions
+       * without finishing them — trying the app out, say — kept seeing the same
+       * front-of-the-queue moves. Measured over twelve workouts, that is the
+       * difference between reaching 87-100% of a pool and roughly half of it. */
+      if (item.exId) {
+        S.usage[item.exId] = (S.usage[item.exId] || 0) + 1;
+        save();
+      }
       $('ex-cue').textContent = item.cue || '';
       $('nextup').innerHTML = item.next ? 'Next <i>·</i> <b>' + esc(item.next) + '</b>' : 'Last move of the session';
       $('stage-badge').classList.remove('is-on');
@@ -259,9 +271,8 @@
     S.counts[plan.session] = (S.counts[plan.session] || 0) + 1;
     S.minutes += Math.round(plan.length / 60);
     S.lastTemplate[plan.session] = plan.template;
-    plan.items.forEach(function (it) {
-      if (it.kind === 'work' && it.exId) S.usage[it.exId] = (S.usage[it.exId] || 0) + 1;
-    });
+    /* Usage is recorded per move in onItem as it happens, not in bulk here —
+     * otherwise a session you abandon teaches the variety engine nothing. */
     var d = today();
     if (S.days.indexOf(d) === -1) S.days.push(d);
     if (S.days.length > 400) S.days = S.days.slice(-400);
