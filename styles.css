@@ -213,14 +213,15 @@ body[data-kind="rest"] .tmeter-fill,
 body[data-kind="transition"] .tmeter-fill,
 body[data-kind="ready"] .tmeter-fill { background: var(--dim); }
 
-/* The change-position gap goes further and removes the meter entirely. It is
- * only a few seconds, so precise time left is worth nothing, and an absent bar
- * cannot be misread as a running one — which reversing its direction still
- * asked you to do. The banner below carries the countdown instead.
+/* The final seconds before ANY exercise drop the meter entirely: an absent bar
+ * cannot be misread as a running one, which reversing its direction still asked
+ * you to do, and with seconds left the exact number is worth nothing. The banner
+ * carries it instead.
  *
- * Rests keep their meter: they run 15-25s, you are recovering rather than about
- * to move, and knowing how long is left is genuinely useful there. */
-body[data-kind="transition"] .tmeter { opacity: 0; }
+ * Driven by data-getset, set on time remaining rather than on the kind of
+ * interval. A long rest keeps its meter while you are actually recovering and
+ * only switches over for the run-up. */
+body[data-getset] .tmeter { opacity: 0; }
 .tmeter { transition: opacity .2s ease; }
 
 .figwrap { transition: opacity .28s ease, filter .28s ease; }
@@ -288,9 +289,8 @@ body[data-kind="ready"] .figwrap {
   padding: 5px 11px; border-radius: 999px; opacity: 0; transition: opacity .2s ease;
 }
 .stage-badge.is-on { opacity: 1; }
-/* The banner already says "Get Set" during a gap; two labels saying it at once
- * is noise. Rests keep their "Next up" badge. */
-body[data-kind="transition"] .stage-badge { opacity: 0; }
+/* The banner already says "Get Set"; two labels saying it at once is noise. */
+body[data-getset] .stage-badge { opacity: 0; }
 
 /* Change-position banner. Sits above everything, ramps from a neutral grey to
  * the session accent across the gap, and breathes gently so it reads as a state
@@ -314,7 +314,7 @@ body[data-kind="transition"] .stage-badge { opacity: 0; }
   text-transform: uppercase; color: var(--ink);
   mix-blend-mode: normal;
 }
-body[data-kind="transition"] .getset {
+body[data-getset] .getset {
   opacity: 0.5;                       /* half-transparent over the background */
   animation: getset-breathe 1.05s ease-in-out infinite;
 }
@@ -429,5 +429,5 @@ body[data-session="sweat"] { --accent: var(--sweat); }
   .btn:active, .pause-fab:active { transform: none; }
   /* Hold it steady and lean on the colour ramp alone, which still carries the
    * whole countdown. */
-  body[data-kind="transition"] .getset { animation: none; opacity: 0.5; }
+  body[data-getset] .getset { animation: none; opacity: 0.5; }
 }

@@ -8,7 +8,7 @@
 
   /* Shown in Settings. Bump with sw.js CACHE on every release so "which build am
    * I actually running?" is answerable from the phone instead of by guessing. */
-  var BUILD = '2026-08-01 · v11';
+  var BUILD = '2026-08-01 · v12';
 
   /* ---------- state ---------- */
 
@@ -138,12 +138,24 @@
     if (n) rampFrom = [parseInt(n[1], 16), parseInt(n[2], 16), parseInt(n[3], 16)];
   }
 
-  function setRing(frac) {
+  /* Seconds of run-up before an exercise. A change-position gap is exactly this
+   * long, so it is bannered end to end; a rest keeps its meter until it drops
+   * inside this window. */
+  var GETSET_LEAD = 5;
+  var getsetOn = false;
+
+  function setRing(frac, left) {
     meterFill.style.transform =
       'scaleY(' + global.S3.player.meterScale(meterMode, frac).toFixed(4) + ')';
-    if (meterMode === 'transition') {
-      getset.style.setProperty('--p', global.S3.player.rampColour(rampFrom, rampTo, frac));
+
+    var phase = global.S3.player.getSetPhase(meterMode, left, GETSET_LEAD);
+    if (phase === null) {
+      if (getsetOn) { document.body.removeAttribute('data-getset'); getsetOn = false; }
+      return;
     }
+    /* Only touch the attribute on the edge — this runs every frame. */
+    if (!getsetOn) { document.body.setAttribute('data-getset', ''); getsetOn = true; }
+    getset.style.setProperty('--p', global.S3.player.rampColour(rampFrom, rampTo, phase));
   }
 
   var run = null;    // { plan, sessions, idx, single }
@@ -187,7 +199,7 @@
 
   function onTick(t) {
     $('clock').textContent = mmss(t.remaining);
-    setRing(t.itemFrac);
+    setRing(t.itemFrac, t.left);
     $('sessbar-fill').style.width = (t.sessionFrac * 100).toFixed(2) + '%';
   }
 
@@ -230,7 +242,9 @@
     $('sessbar-fill').style.width = '0%';
     meterMode = 'ready';
     document.body.setAttribute('data-kind', 'ready');
-    setRing(0);
+    document.body.removeAttribute('data-getset');
+    getsetOn = false;
+    setRing(0, Infinity);
 
     player.load(plan);
     go('play');

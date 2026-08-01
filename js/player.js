@@ -320,9 +320,27 @@
     return 'rgb(' + mix(0) + ', ' + mix(1) + ', ' + mix(2) + ')';
   }
 
+  /* Are we in the run-up to an exercise, and how far through it?
+   *
+   * Returns null during work and during the bulk of a long rest; otherwise 0..1,
+   * reaching 1 exactly as the exercise starts.
+   *
+   * Keyed on time remaining rather than on the kind of interval. Scoping this to
+   * `transition` alone was a mistake: only Stretch produces transitions, so the
+   * run-up signal never appeared in Strength or Sweat, whose gaps are all rests.
+   * The moment before an exercise starts is the same moment in every session, so
+   * it gets the same treatment — a long rest keeps its meter for the recovery
+   * part and picks the banner up for the last few seconds. */
+  function getSetPhase(kind, left, lead) {
+    if (kind === 'work') return null;
+    var L = lead > 0 ? lead : 5;
+    if (!(left <= L)) return null;
+    return Math.max(0, Math.min(1, 1 - left / L));
+  }
+
   global.S3 = global.S3 || {};
   global.S3.player = {
     Player: Player, Audio: Audio2,
-    meterScale: meterScale, rampColour: rampColour
+    meterScale: meterScale, rampColour: rampColour, getSetPhase: getSetPhase
   };
 })(window);

@@ -238,14 +238,38 @@ for (const kind of kinds) {
 }
 console.log(`interval meter: work drains, ${[...kinds].filter((k) => k !== 'work').join('/')} fill`);
 
-/* The change-position gap hides the meter outright and puts a banner up instead.
- * Both halves must be present: a banner with the meter still showing is two
- * countdowns, and a hidden meter with no banner is no countdown at all. */
-if (!css.includes('body[data-kind="transition"] .tmeter')) {
-  note('the change-position gap must hide the interval meter, not just recolour it');
+/* The run-up hides the meter outright and puts a banner up instead. Both halves
+ * must be present: a banner with the meter still showing is two countdowns, and
+ * a hidden meter with no banner is no countdown at all. */
+if (!css.includes('body[data-getset] .tmeter')) {
+  note('the run-up must hide the interval meter, not just recolour it');
 }
-if (!css.includes('body[data-kind="transition"] .getset')) note('no banner shown during a change-position gap');
+if (!css.includes('body[data-getset] .getset')) note('no banner shown during the run-up');
 if (!html.includes('id="getset"')) note('index.html has no #getset banner for app.js to drive');
+
+/* The run-up must key on time remaining, not on the kind of interval. Scoping it
+ * to `transition` meant it only ever appeared in Stretch: Strength and Sweat
+ * produce nothing but rests, so two of the three session types never showed it
+ * at all. */
+const gsp = S3.player.getSetPhase;
+if (gsp('work', 1, 5) !== null) note('the run-up must never show during work');
+if (gsp('rest', 20, 5) !== null) note('a long rest should keep its meter until the run-up');
+if (gsp('rest', 5, 5) !== 0) note('the run-up should begin exactly at the lead time');
+if (gsp('rest', 0, 5) !== 1) note('the run-up should reach full accent as the exercise starts');
+if (gsp('transition', 5, 5) !== 0 || gsp('transition', 0, 5) !== 1) {
+  note('a 5s change-position gap should be bannered end to end');
+}
+if (gsp('ready', 2.5, 5) !== 0.5) note('the run-up should be linear in time remaining');
+
+/* Every session type must actually reach the run-up, which is the check that
+ * would have caught scoping it to transitions. */
+for (const sess of ['stretch', 'strength', 'sweat']) {
+  const p = S3.workouts.buildSession(sess, {
+    equip: S3.workouts.LOCATIONS.gym.equip, level: 2, count: 0, usage: {}
+  });
+  const reached = p.items.some((it) => it.kind !== 'work' && gsp(it.kind, 0, 5) === 1);
+  if (!reached) note(`${sess} never reaches the run-up banner — its gaps are ${[...new Set(p.items.map((i) => i.kind))].join('/')}`);
+}
 
 /* Ramp from neutral to the session accent. Landing exactly on the accent is what
  * makes "full accent = go" true rather than approximately true. */
