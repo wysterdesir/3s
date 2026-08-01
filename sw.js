@@ -1,6 +1,9 @@
 /* 3S service worker — cache the shell so a workout survives a dead signal.
- * Bump CACHE on every release so clients pick up new workouts. */
-var CACHE = '3s-v6';
+ *
+ * Bump CACHE whenever the shell changes. Not to make clients pick up the new
+ * build — networkFirst below already does that on the next online load — but so
+ * the OFFLINE copy is replaced promptly rather than lingering a release behind. */
+var CACHE = '3s-v7';
 var SHELL = [
   './',
   './index.html',
