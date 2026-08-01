@@ -301,6 +301,28 @@
     return kind === 'work' ? 1 - f : f;
   }
 
+  /* The change-position banner ramps from a neutral grey to the session accent
+   * across the gap; landing on full accent is the go signal.
+   *
+   * Eased IN — slow, then decisive — rather than linear or smoothstepped. Both
+   * of those are half-way to the accent at the half-way point, and on a
+   * five-second gap that means it looks nearly ready after 2.5 seconds, which is
+   * the same "start early" trap in a new colour. Quadratic keeps it plainly
+   * neutral for the first few seconds and commits over the last one, which is
+   * also where the 3-2-1 ticks are.
+   *
+   * Kept next to meterScale so both signals for the same moment are testable
+   * without a DOM. */
+  function rampColour(from, to, frac) {
+    var f = Math.max(0, Math.min(1, frac || 0));
+    var e = f * f;
+    function mix(i) { return Math.round(from[i] + (to[i] - from[i]) * e); }
+    return 'rgb(' + mix(0) + ', ' + mix(1) + ', ' + mix(2) + ')';
+  }
+
   global.S3 = global.S3 || {};
-  global.S3.player = { Player: Player, Audio: Audio2, meterScale: meterScale };
+  global.S3.player = {
+    Player: Player, Audio: Audio2,
+    meterScale: meterScale, rampColour: rampColour
+  };
 })(window);

@@ -221,5 +221,41 @@ for (const kind of kinds) {
 }
 console.log(`interval meter: work drains, ${[...kinds].filter((k) => k !== 'work').join('/')} fill`);
 
+/* The change-position gap hides the meter outright and puts a banner up instead.
+ * Both halves must be present: a banner with the meter still showing is two
+ * countdowns, and a hidden meter with no banner is no countdown at all. */
+if (!css.includes('body[data-kind="transition"] .tmeter')) {
+  note('the change-position gap must hide the interval meter, not just recolour it');
+}
+if (!css.includes('body[data-kind="transition"] .getset')) note('no banner shown during a change-position gap');
+if (!html.includes('id="getset"')) note('index.html has no #getset banner for app.js to drive');
+
+/* Ramp from neutral to the session accent. Landing exactly on the accent is what
+ * makes "full accent = go" true rather than approximately true. */
+const ramp = S3.player.rampColour;
+const grey = [95, 104, 119], accent = [61, 220, 192];
+if (ramp(grey, accent, 0) !== 'rgb(95, 104, 119)') note('ramp does not start at the neutral colour');
+if (ramp(grey, accent, 1) !== 'rgb(61, 220, 192)') note('ramp does not finish exactly on the accent');
+if (ramp(grey, accent, -2) !== ramp(grey, accent, 0)) note('ramp does not clamp below zero');
+if (ramp(grey, accent, 5) !== ramp(grey, accent, 1)) note('ramp does not clamp above one');
+/* Held back early and committed late. A linear or smoothstepped ramp is half-way
+ * to the accent half-way through, so a five-second gap looks nearly ready after
+ * 2.5s — the same "start early" trap in a new colour. */
+const midG = +ramp(grey, accent, 0.5).match(/\d+/g)[1];
+const halfway = (grey[1] + accent[1]) / 2;
+if (midG >= halfway) note(`ramp is ${midG} of ${accent[1]} at the halfway point — it should still read neutral there`);
+const lateG = +ramp(grey, accent, 0.85).match(/\d+/g)[1];
+if (lateG < halfway) note('ramp has not clearly committed to the accent by 85% through the gap');
+
+/* Flashing faster than ~3Hz is a photosensitive-seizure risk, and the animation
+ * must be droppable for anyone who asked for less motion. */
+const period = /getset-breathe\s+([0-9.]+)s/.exec(css);
+if (!period) note('the banner has no breathe animation');
+else if (parseFloat(period[1]) < 0.34) note(`banner pulses at ${(1 / parseFloat(period[1])).toFixed(1)}Hz — above the 3Hz seizure threshold`);
+if (!/prefers-reduced-motion[\s\S]*?\.getset\s*\{[^}]*animation:\s*none/.test(css)) {
+  note('banner animation is not disabled under prefers-reduced-motion');
+}
+console.log(`change-position gap: meter hidden, banner ramps grey -> accent at ${(1 / parseFloat(period ? period[1] : 1)).toFixed(1)}Hz`);
+
 console.log(fails ? `\n${fails} FAILURE(S)` : '\nall checks passed');
 process.exit(fails ? 1 : 0);

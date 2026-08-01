@@ -123,9 +123,27 @@
   var meterFill = $('tmeter-fill');
   var meterMode = 'ready';
 
+  /* Read once per item rather than per frame: getComputedStyle forces style
+   * resolution, and the accent only changes when the session does. */
+  var getset = $('getset');
+  var rampFrom = [95, 104, 119];          // --dim
+  var rampTo = [61, 220, 192];            // --accent, refreshed per session
+
+  function readAccent() {
+    var v = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+    var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(v);
+    if (m) rampTo = [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+    var d = getComputedStyle(document.body).getPropertyValue('--dim').trim();
+    var n = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(d);
+    if (n) rampFrom = [parseInt(n[1], 16), parseInt(n[2], 16), parseInt(n[3], 16)];
+  }
+
   function setRing(frac) {
     meterFill.style.transform =
       'scaleY(' + global.S3.player.meterScale(meterMode, frac).toFixed(4) + ')';
+    if (meterMode === 'transition') {
+      getset.style.setProperty('--p', global.S3.player.rampColour(rampFrom, rampTo, frac));
+    }
   }
 
   var run = null;    // { plan, sessions, idx, single }
@@ -204,6 +222,7 @@
     var meta = W.SESSIONS[plan.session];
 
     document.body.setAttribute('data-session', plan.session);
+    readAccent();                       // the accent changes with the session
     $('sess-pill').textContent = meta.name;
     $('sess-idx').textContent = run.single ? meta.tag : (i + 1) + ' of ' + run.sessions.length;
     $('sess-tmpl').textContent = plan.template;
