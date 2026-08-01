@@ -289,23 +289,29 @@ body[data-kind="ready"] .figwrap {
   padding: 5px 11px; border-radius: 999px; opacity: 0; transition: opacity .2s ease;
 }
 .stage-badge.is-on { opacity: 1; }
-/* The banner already says "Get Set"; two labels saying it at once is noise. */
+/* The banner already says "Get Ready"; two labels at once is noise. */
 body[data-getset] .stage-badge { opacity: 0; }
 
-/* Change-position banner. Sits above everything, ramps from a neutral grey to
- * the session accent across the gap, and breathes gently so it reads as a state
- * you are waiting through rather than a static label. Arriving at full accent
- * IS the go signal — same language as the meter, where accent means live.
+/* Run-up banner ("Get Ready"). Ramps from a neutral grey to the session accent
+ * across the last seconds before an exercise, and breathes gently so it reads as
+ * a state you are waiting through rather than a static label. Arriving at full
+ * accent IS the go signal — same language as the meter, where accent means live.
+ *
+ * The element, class and data attribute are still named `getset` from the first
+ * version of this; only the label changed.
  *
  * The colour is interpolated in app.js and set as --p; doing it here would mean
  * either a keyframe per session colour or color-mix support this app does not
  * otherwise require. */
 .getset {
-  position: absolute; left: 0; right: 0;
-  top: calc(env(safe-area-inset-top) + 8px);
+  /* Anchored to the top of the stage, which begins directly under the session
+   * name and template line — so it never covers them. Absolute rather than in
+   * flow: a banner that took up space would resize the clip every time it
+   * appeared and vanished, twenty-odd times a session. */
+  position: absolute; left: 0; right: 0; top: 0;
   z-index: 6; pointer-events: none;
   display: flex; align-items: center; justify-content: center;
-  height: 34px; opacity: 0;
+  height: 34px; border-radius: 8px; opacity: 0;
   background: var(--p, var(--dim));
   transition: opacity .18s ease;
 }

@@ -80,14 +80,16 @@
 
 <!-- ============ PLAYER ============ -->
 <section class="screen screen-play" id="play">
-  <div class="getset" id="getset" aria-hidden="true"><span>Get Set</span></div>
-
   <div class="play-top">
     <div class="sess-pill" id="sess-pill">Stretch</div>
     <div class="sess-meta"><span id="sess-idx">1 of 3</span><i>·</i><span id="sess-tmpl">—</span></div>
   </div>
 
   <div class="stage" id="stage">
+    <!-- Inside the stage, so it sits under the session name and template rather
+         than over them. Absolute, so appearing and disappearing never reflows
+         the stage and resizes the clip mid-session. -->
+    <div class="getset" id="getset" aria-hidden="true"><span>Get Ready</span></div>
     <div class="tmeter" aria-hidden="true"><i class="tmeter-fill" id="tmeter-fill"></i></div>
     <div class="figwrap" id="figwrap"></div>
     <div class="stage-badge" id="stage-badge">Next up</div>
