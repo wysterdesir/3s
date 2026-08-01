@@ -116,15 +116,16 @@
   audio.on = S.sound;
   audio.voice = S.voice;
 
-  /* Interval countdown, drawn as a draining column at the left edge. `frac` runs
-   * 0 -> 1 across the interval, so the fill is what remains. Scaling beats
-   * animating height: it stays on the compositor and cannot reflow the stage
-   * sixty times a second. */
+  /* Interval countdown, a column at the left edge. Scaling beats animating
+   * height: it stays on the compositor and cannot reflow the stage sixty times a
+   * second. The direction rule lives in player.js as meterScale() so it can be
+   * tested without a DOM; this only paints the result. */
   var meterFill = $('tmeter-fill');
+  var meterMode = 'ready';
 
   function setRing(frac) {
-    var left = 1 - Math.max(0, Math.min(1, frac));
-    meterFill.style.transform = 'scaleY(' + left.toFixed(4) + ')';
+    meterFill.style.transform =
+      'scaleY(' + global.S3.player.meterScale(meterMode, frac).toFixed(4) + ')';
   }
 
   var run = null;    // { plan, sessions, idx, single }
@@ -138,6 +139,11 @@
 
   function onItem(item) {
     $('ex-name').textContent = item.name;
+
+    /* Drives the meter's direction and colour, and dims the preview clip, so
+     * "this is running" and "this is coming" never look the same. */
+    meterMode = item.kind;
+    document.body.setAttribute('data-kind', item.kind);
 
     if (item.kind === 'work') {
       $('ex-cue').textContent = item.cue || '';
@@ -203,6 +209,8 @@
     $('sess-tmpl').textContent = plan.template;
     $('clock').textContent = mmss(plan.length);
     $('sessbar-fill').style.width = '0%';
+    meterMode = 'ready';
+    document.body.setAttribute('data-kind', 'ready');
     setRing(0);
 
     player.load(plan);

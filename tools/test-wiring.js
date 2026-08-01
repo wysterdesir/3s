@@ -187,5 +187,39 @@ p3.skip();
 if (p3.elapsed() > p3.total) note(`skip past the last move overshot: ${p3.elapsed()} > ${p3.total}`);
 console.log(`skip from the final move clamped to ${p3.elapsed().toFixed(0)}s of ${p3.total}s`);
 
+/* ---- 3. the interval meter must not read the same in work and rest ---- */
+
+/* Work drains, everything else fills. Drawn identically, a change-position gap —
+ * which previews the next exercise behind it — reads as the exercise already
+ * running, and you start the move early. */
+const ms = S3.player.meterScale;
+if (ms('work', 0) !== 1 || ms('work', 1) !== 0) note('work interval should drain from full to empty');
+for (const kind of ['rest', 'transition', 'ready']) {
+  if (ms(kind, 0) !== 0 || ms(kind, 1) !== 1) note(`${kind} interval should fill from empty to full`);
+  /* Not at 0.5 — a linear flip crosses there by definition, and the two are
+   * momentarily the same height while moving in opposite directions. Anywhere
+   * else they must part company. */
+  for (const f of [0.25, 0.75]) {
+    if (ms(kind, f) === ms('work', f)) note(`${kind} matches work at ${f} through the interval`);
+  }
+}
+if (ms('work', -5) !== 1 || ms('work', 99) !== 0) note('meterScale did not clamp out-of-range fractions');
+
+/* Every kind a real session emits must have somewhere to say "not the exercise".
+ * A new kind slipping in would otherwise silently drain in the session accent,
+ * which is exactly the signal that caused the problem. */
+const kinds = new Set(plan.items.map((it) => it.kind));
+const stretchKinds = new Set(
+  S3.workouts.buildSession('stretch', { equip: [], level: 1, count: 0, usage: {} })
+    .items.map((it) => it.kind));
+stretchKinds.forEach((k) => kinds.add(k));
+for (const kind of kinds) {
+  if (kind === 'work') continue;
+  if (!css.includes(`body[data-kind="${kind}"] .tmeter-fill`)) {
+    note(`interval kind "${kind}" has no styles.css rule — it would drain in the session accent like work`);
+  }
+}
+console.log(`interval meter: work drains, ${[...kinds].filter((k) => k !== 'work').join('/')} fill`);
+
 console.log(fails ? `\n${fails} FAILURE(S)` : '\nall checks passed');
 process.exit(fails ? 1 : 0);

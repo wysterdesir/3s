@@ -204,6 +204,24 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
   transition: background .3s ease;
 }
 
+/* Rest and change-position gaps are not the exercise. Three signals say so at
+ * once, because any one of them alone loses to the sight of a figure moving:
+ * the meter fills instead of draining (see setRing in app.js), it drops the
+ * session accent, and the preview is dimmed so it reads as something coming
+ * rather than something running. Accent plus full brightness means go. */
+body[data-kind="rest"] .tmeter-fill,
+body[data-kind="transition"] .tmeter-fill,
+body[data-kind="ready"] .tmeter-fill { background: var(--dim); }
+
+.figwrap { transition: opacity .28s ease, filter .28s ease; }
+body[data-kind="rest"] .figwrap,
+body[data-kind="transition"] .figwrap,
+body[data-kind="ready"] .figwrap {
+  /* Still legible — the whole point of the preview is to learn the move — but
+   * unmistakably not the live one. */
+  opacity: 0.5; filter: saturate(0.65);
+}
+
 .figwrap {
   position: relative; z-index: 2;
   /* No longer boxed inside a ring, so the clip can take the room it needs. */

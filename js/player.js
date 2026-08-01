@@ -286,6 +286,21 @@
     return item.kind === 'work' ? item.props : this._nextProps(i);
   };
 
+  /* How full the interval meter should be, 0..1, given the kind of interval and
+   * how far through it we are.
+   *
+   * Work DRAINS and everything else FILLS. The bar answers a different question
+   * in each state — "how long must I keep going" versus "how long until I start"
+   * — and drawing both the same way meant a change-position gap, with the next
+   * exercise previewing behind it, read as the exercise already running.
+   *
+   * It lives here rather than in app.js so the rule can be tested without a DOM;
+   * app.js only turns the result into a transform. */
+  function meterScale(kind, frac) {
+    var f = Math.max(0, Math.min(1, frac || 0));
+    return kind === 'work' ? 1 - f : f;
+  }
+
   global.S3 = global.S3 || {};
-  global.S3.player = { Player: Player, Audio: Audio2 };
+  global.S3.player = { Player: Player, Audio: Audio2, meterScale: meterScale };
 })(window);
