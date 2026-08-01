@@ -3,7 +3,7 @@
  * Bump CACHE whenever the shell changes. Not to make clients pick up the new
  * build — networkFirst below already does that on the next online load — but so
  * the OFFLINE copy is replaced promptly rather than lingering a release behind. */
-var CACHE = '3s-v10';
+var CACHE = '3s-v11';
 var SHELL = [
   './',
   './index.html',

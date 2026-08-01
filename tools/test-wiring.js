@@ -47,6 +47,23 @@ for (const v of ['--stretch', '--strength', '--sweat', '--accent', '--ink', '--m
   if (!css.includes(v + ':')) note(`css var ${v} never defined`);
 }
 
+/* ---- 1b. the build stamp must match what actually shipped ---- */
+
+/* Settings shows BUILD so "which version am I running?" is answerable from the
+ * phone. It drifted five releases behind sw.js and confidently reported a build
+ * from two days earlier — which is worse than showing nothing, because it is
+ * consulted exactly when someone is already unsure. */
+const swSrc = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
+const swVer = /var CACHE = '3s-(v\d+)'/.exec(swSrc);
+const buildVer = /var BUILD = '[^']*·\s*(v\d+)'/.exec(appSrc);
+if (!swVer) note('cannot read the cache version from sw.js');
+else if (!buildVer) note('cannot read a version from app.js BUILD');
+else if (swVer[1] !== buildVer[1]) {
+  note(`BUILD says ${buildVer[1]} but sw.js caches 3s-${swVer[1]} — bump both together`);
+} else {
+  console.log(`build stamp ${buildVer[1]} matches the service worker cache`);
+}
+
 /* ---- 2. simulated session ---- */
 
 const sandbox = {

@@ -8,7 +8,7 @@
 
   /* Shown in Settings. Bump with sw.js CACHE on every release so "which build am
    * I actually running?" is answerable from the phone instead of by guessing. */
-  var BUILD = '2026-07-30 · v6';
+  var BUILD = '2026-08-01 · v11';
 
   /* ---------- state ---------- */
 
