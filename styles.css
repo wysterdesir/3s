@@ -1,13 +1,25 @@
-/* 3S — one dark theme, tuned for a phone propped against a wall. */
-
+/* 3S — one dark theme, tuned for a phone propped against a wall.
+ *
+ * The floor is deliberately NOT near-black. The exercise clips are keyed, and the
+ * models wear black kit: measured across the library, a quarter to a third of
+ * every subject's pixels sit below luminance 20, and the old #08090c background
+ * sat at 9. Torsos disappeared — the silhouette broke apart into floating arms
+ * and legs. #171c25 puts roughly 16 luminance between the background and the
+ * kit, which is enough to read the whole body while still being unmistakably a
+ * dark theme.
+ *
+ * Everything below was re-seated on that floor rather than left where it was:
+ * the old surfaces sat between luminance 18 and 30, so on the new background
+ * they would have inverted or vanished. Each replacement holds the contrast
+ * ratio its predecessor had against the old background. */
 :root {
-  --bg: #08090c;
-  --bg-2: #101319;
-  --card: #14171f;
-  --line: #22262f;
+  --bg: #171c25;
+  --bg-2: #1e2430;
+  --card: #222836;
+  --line: #333b49;
   --ink: #f3f5f9;
-  --muted: #7f8797;
-  --dim: #565e6c;
+  --muted: #888f9f;
+  --dim: #5f6877;
 
   --stretch: #3ddcc0;
   --strength: #ffab3d;
@@ -97,7 +109,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 .btn-primary { background: var(--ink); color: #0a0b0e; }
 .btn-ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line); font-size: 15px; padding: 14px 18px; font-weight: 550; }
 .btn-small { background: var(--card); border: 1px solid var(--line); padding: 13px 12px; font-size: 14px; font-weight: 550; flex: 1; }
-.btn-danger { color: var(--sweat); border-color: #3a232a; }
+.btn-danger { color: var(--sweat); border-color: #4a2d36; }
 
 .stats { text-align: center; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 18px; }
 .stats b { color: var(--ink); font-weight: 600; }
@@ -126,7 +138,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 }
 .card-t { font-size: 16.5px; font-weight: 620; display: flex; align-items: center; gap: 9px; }
 .card-p { font-size: 13px; color: var(--muted); margin-top: 4px; }
-.card.is-on { border-color: var(--accent); background: #171b24; }
+.card.is-on { border-color: var(--accent); background: #252c3a; }
 .card.is-on .card-t::after {
   content: ''; width: 8px; height: 8px; border-radius: 50%;
   background: var(--accent); margin-left: auto;
@@ -141,7 +153,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
   background: var(--card); border: 1.5px solid var(--line); border-radius: 999px;
   padding: 9px 15px; font-size: 14px; font-weight: 520; color: var(--muted);
 }
-.chip.is-on { border-color: var(--accent); color: var(--ink); background: #171b24; }
+.chip.is-on { border-color: var(--accent); color: var(--ink); background: #252c3a; }
 
 .rows { display: flex; flex-direction: column; gap: 1px; background: var(--line); border-radius: var(--r); overflow: hidden; }
 .row {
@@ -183,7 +195,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
    * beside the meter. Off-centring the exercise to make room for a 6px bar would
    * trade the more noticeable problem for the less noticeable one. */
   position: absolute; left: calc(6px - var(--pad)); top: 4%; bottom: 4%; width: 6px;
-  border-radius: 999px; background: #171b23; overflow: hidden; z-index: 3;
+  border-radius: 999px; background: #242a37; overflow: hidden; z-index: 3;
 }
 .tmeter-fill {
   position: absolute; left: 0; right: 0; bottom: 0;
@@ -233,9 +245,9 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 .fx-neck { stroke-width: 6; }
 .fx-head { fill: none; stroke: var(--ink); stroke-width: 6.5; }
 .fx-far .fx-limb { stroke: var(--accent); opacity: 0.4; }
-.fx-ground { stroke: #232833; stroke-width: 2.5; stroke-linecap: round; }
-.fx-fixture { stroke: #2f3540; stroke-width: 4.5; stroke-linecap: round; }
-.fx-fixture-fill { fill: #23282f; }
+.fx-ground { stroke: #343c4b; stroke-width: 2.5; stroke-linecap: round; }
+.fx-fixture { stroke: #414a59; stroke-width: 4.5; stroke-linecap: round; }
+.fx-fixture-fill { fill: #333a47; }
 .fx-db { stroke: var(--accent); stroke-width: 8.5; stroke-linecap: round; }
 .fx-bar { stroke: #4a515e; stroke-width: 4; }
 .fx-weight { fill: var(--accent); opacity: 0.9; }
@@ -263,7 +275,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
   font-variant-numeric: tabular-nums; font-feature-settings: "tnum";
 }
 .clock-label { font-size: 11px; color: var(--dim); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 5px; }
-.sessbar { height: 3px; border-radius: 999px; background: #1b1f27; margin: 13px auto 0; max-width: 320px; overflow: hidden; }
+.sessbar { height: 3px; border-radius: 999px; background: #282e3b; margin: 13px auto 0; max-width: 320px; overflow: hidden; }
 .sessbar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 999px; }
 .nextup { font-size: 12.5px; color: var(--muted); margin-top: 11px; min-height: 17px; }
 .nextup b { color: var(--ink); font-weight: 600; }
@@ -274,7 +286,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
   position: absolute; z-index: 4;
   right: max(18px, env(safe-area-inset-right)); bottom: calc(env(safe-area-inset-bottom) + 18px);
   width: 52px; height: 52px; border-radius: 50%;
-  background: #191d25; border: 1px solid var(--line);
+  background: var(--bg-2); border: 1px solid var(--line);
   display: flex; align-items: center; justify-content: center;
 }
 .pause-fab svg { width: 21px; height: 21px; fill: var(--ink); opacity: 0.9; }
