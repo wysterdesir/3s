@@ -432,6 +432,29 @@ console.log(`\n${n} clips, ${(total / 1048576).toFixed(1)} MB total -> ${outDir}
 if (kept) console.log(`${kept} already encoded and kept; ${n - kept} newly encoded (--force re-encodes all).`);
 console.log(`${EX.length - n} exercises keep the drawn figure.`);
 
+/* Every exercise in a generated library is supposed to have a clip, so a gap
+ * here is a fault, not a fact — and "1 exercises keep the drawn figure" scrolls
+ * past unnoticed at the end of a long encode.
+ *
+ * The usual cause is a recorded source that no longer exists: the vendor's
+ * Dropbox gains and renames files (one had a trailing space removed), which
+ * leaves clips.json pointing at a path that is gone. Name matching cannot
+ * rescue it, deliberately — a recorded source must never be overridden by a
+ * guess. Re-run tools/extract-catalogue.py, then the generator. */
+const unresolved = Object.keys(clipsById).filter((id) => !clips[id]);
+if (unresolved.length) {
+  console.log(`\n!! ${unresolved.length} exercise(s) have a recorded source that did not resolve:`);
+  unresolved.slice(0, 10).forEach((id) => console.log(`   ${id}  <-  ${clipsById[id].file}`));
+  const gone = unresolved.filter((id) => {
+    try { return !fs.existsSync(path.join(SRC, clipsById[id].tree, clipsById[id].file)); }
+    catch (e) { return false; }
+  });
+  if (gone.length) {
+    console.log(`   ${gone.length} of them no longer exist in the bundle — the catalogue snapshot is stale.`);
+    console.log('   Fix: py tools/extract-catalogue.py && node tools/build-library.js');
+  }
+}
+
 /* Clips left behind by a previous library are dead weight in the upload and
  * would be served to nobody. Name them rather than deleting silently. */
 const live = new Set(Object.values(clips).map((c) => c.file));

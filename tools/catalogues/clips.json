@@ -534,6 +534,11 @@
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
  },
+ "alternating-plank-lunge": {
+  "file": "Abdominals/Alternating Plank Lunge_Female.mp4",
+  "tree": "1200+ GREEN SCREEN VIDEOS",
+  "fit": "alpha"
+ },
  "around-the-world-superman-hold": {
   "file": "Back/around the world superman hold_female.mp4",
   "tree": "1200+ GREEN SCREEN VIDEOS",
@@ -624,16 +629,6 @@
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
  },
- "air-bike": {
-  "file": "Abdominals/Air Bike (VERSION 2)_female.mp4",
-  "tree": "1200+ GREEN SCREEN VIDEOS",
-  "fit": "alpha"
- },
- "air-bike-crunch": {
-  "file": "Abdominals/air bike crunch.mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
- },
  "air-twisting-crunch": {
   "file": "Abdominals/air twisting crunch_female.mp4",
   "tree": "1200+ GREEN SCREEN VIDEOS",
@@ -659,20 +654,10 @@
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
  },
- "alternate-toe-tap-leg-lift": {
-  "file": "Abdominals/Alternate Toe Tap Leg Lift_female.mp4",
+ "alternating-oblique-sit-ups": {
+  "file": "Abdominals/Alternating Oblique Sit-Ups_Female.mp4",
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
- },
- "alternating-leg-lifts": {
-  "file": "Abdominals/Alternating Leg Lifts_Female.mp4",
-  "tree": "1200+ GREEN SCREEN VIDEOS",
-  "fit": "alpha"
- },
- "alternating-toe-tap": {
-  "file": "Abdominals/alternating toe tap .mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
  },
  "band-bicycle-crunch": {
   "file": "Abdominals/Band Bicycle Crunch_female.mp4",
@@ -694,18 +679,13 @@
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
- "bicycles-crunches": {
-  "file": "Abdominals/bicycles crunches .mp4",
+ "brazilian-crunches": {
+  "file": "Abdominals/brazilian crunches.mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
  "dragonfly": {
   "file": "Abdominals/Dragonfly_Female.mp4",
-  "tree": "1200+ GREEN SCREEN VIDEOS",
-  "fit": "alpha"
- },
- "flat-knee-raise": {
-  "file": "Abdominals/Flat Knee Raise_Female.mp4",
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
  },
@@ -804,6 +784,11 @@
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
  },
+ "ankle-pumps": {
+  "file": "Legs/Ankle Pumps_Female.mp4",
+  "tree": "1200+ GREEN SCREEN VIDEOS",
+  "fit": "alpha"
+ },
  "band-single-leg-split-squat": {
   "file": "Legs/Band single leg split squat_female.mp4",
   "tree": "1200+ GREEN SCREEN VIDEOS",
@@ -881,6 +866,21 @@
  },
  "bodyweight-wall-squat": {
   "file": "Legs/Bodyweight Wall Squat.mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
+ "bulgarian-split-squat": {
+  "file": "Legs/Bulgarian Split Squat.mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
+ "burpee-squat": {
+  "file": "Legs/Burpee Squat.mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
+ "calf-raise-clap": {
+  "file": "Legs/Calf Raise Clap.mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
@@ -1139,23 +1139,48 @@
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
  },
- "front-lever-raise": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Front Lever Raise_Female.mp4",
-  "tree": "1200+ GREEN SCREEN VIDEOS",
-  "fit": "alpha"
+ "handstand-push-on-chair": {
+  "file": "Shoulders/handstand push on chair .mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
  },
  "laying-lateral-raise": {
   "file": "Shoulders/Laying Lateral Raise_Female.mp4",
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
  },
+ "air-bike-crunch": {
+  "file": "Abdominals/air bike crunch.mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
  "bear-crawls": {
   "file": "Calisthenics-Cardio-Plyo-Functional/Bear crawls.mp4",
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
  },
- "bent-over-twist": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Bent Over Twist.mp4",
+ "bicycle-twisting-crunch": {
+  "file": "Abdominals/bicycle twisting crunch.mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
+ "bicycles-crunches": {
+  "file": "Abdominals/bicycles crunches .mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
+ "bridge-mountain-climber-cross-body": {
+  "file": "Abdominals/Bridge - Mountain Climber (Cross Body).mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
+ "crab-twist-toe-touch": {
+  "file": "Abdominals/Crab Twist Toe Touch.mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
+ "criss-cross-leg-raises": {
+  "file": "Abdominals/Criss Cross Leg Raises.mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
@@ -1164,23 +1189,58 @@
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
+ "flat-knee-raise": {
+  "file": "Abdominals/Flat Knee Raise.mp4",
+  "tree": "1200+ GREEN SCREEN VIDEOS",
+  "fit": "alpha"
+ },
  "mountain-climber-jumps": {
   "file": "Calisthenics-Cardio-Plyo-Functional/Mountain Climber Jumps.mp4",
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
+ },
+ "mountain-climbers": {
+  "file": "Abdominals/mountain climbers.mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
  },
  "plank-individual-arm-reach": {
   "file": "Calisthenics-Cardio-Plyo-Functional/Plank individual arm reach.mp4",
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
  },
+ "plank-jack": {
+  "file": "Abdominals/plank jack .mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
+ "plank-knee-tucks": {
+  "file": "Abdominals/Plank Knee Tucks .mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
  "plank-push-up": {
   "file": "Calisthenics-Cardio-Plyo-Functional/Plank Pushup.mp4",
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
  },
+ "plank-reach-through": {
+  "file": "Abdominals/plank reach through .mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
  "plank-shoulder-taps": {
   "file": "Calisthenics-Cardio-Plyo-Functional/plank shoulder taps  .mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
+ "scissors-kick": {
+  "file": "Abdominals/scissors kick .mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
+ "spider-plank": {
+  "file": "Abdominals/spider plank .mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
@@ -1189,13 +1249,13 @@
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
- "bodyweight-knee-thrust": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Bodyweight Knee Thrust.mp4",
+ "burpee": {
+  "file": "Calisthenics-Cardio-Plyo-Functional/Burpee  .mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
- "burpee": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Burpee  .mp4",
+ "dumbbell-burpee": {
+  "file": "Calisthenics-Cardio-Plyo-Functional/Dumbell Burpee.mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
@@ -1231,6 +1291,11 @@
  },
  "high-knees": {
   "file": "Calisthenics-Cardio-Plyo-Functional/high knees.mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
+ },
+ "jack-knives": {
+  "file": "Abdominals/jack knives .mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
@@ -1284,38 +1349,23 @@
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
- "back-lever": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Back lever.mp4",
+ "alternate-toe-tap-leg-lift": {
+  "file": "Abdominals/Alternate toe tap leg lift.mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
- "body-slide": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Body Slide.mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
+ "alternating-leg-lifts": {
+  "file": "Abdominals/Alternating Leg Lifts.mp4",
+  "tree": "1200+ GREEN SCREEN VIDEOS",
+  "fit": "alpha"
  },
- "body-throw": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Body Throw.mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
- },
- "bodyweight-front-slam": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Bodyweight Front Slam.mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
- },
- "bodyweight-windmill": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Bodyweight Windmill.mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
+ "alternating-toe-tap": {
+  "file": "Abdominals/Alternating Toe Tap.mp4",
+  "tree": "1200+ GREEN SCREEN VIDEOS",
+  "fit": "alpha"
  },
  "chest-fly-side-step": {
   "file": "Calisthenics-Cardio-Plyo-Functional/Chest Fly Side Step.mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
- },
- "chest-pull-back": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Chest Pull Back.mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
@@ -1334,15 +1384,10 @@
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
- "headstand": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Headstand.mp4",
-  "tree": "1200+ GREEN SCREEN VIDEOS",
-  "fit": "alpha"
- },
- "lying-neck-curls": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Lying Neck Curls.mp4",
-  "tree": "1200+ GREEN SCREEN VIDEOS",
-  "fit": "alpha"
+ "heel-touches": {
+  "file": "Abdominals/heel touches .mp4",
+  "tree": "HD 720p LOWEST FILE SIZE",
+  "fit": "card"
  },
  "pike-alternating-opposite-hip-taps": {
   "file": "Calisthenics-Cardio-Plyo-Functional/Pike alternating opposite hip taps.mp4",
@@ -1359,11 +1404,6 @@
   "tree": "1200+ GREEN SCREEN VIDEOS",
   "fit": "alpha"
  },
- "walking-fast": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Walking Fast.mp4",
-  "tree": "1200+ GREEN SCREEN VIDEOS",
-  "fit": "alpha"
- },
  "alternate-punching": {
   "file": "Calisthenics-Cardio-Plyo-Functional/alternate punching.mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
@@ -1374,43 +1414,13 @@
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
- "arm-crossover": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Arm crossover.mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
- },
- "arm-double-crossover": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Arm double crossover.mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
- },
- "arm-pulses": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/arm pulses  .mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
- },
- "arm-pulses-cross": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/arm pulses cross  .mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
- },
  "arm-pulses-palms-downwards": {
   "file": "Calisthenics-Cardio-Plyo-Functional/arm pulses palms downwards  .mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
- "arms-up-and-down": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Arms up and down.mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
- },
  "bodyweight-standing-triangle-fly": {
   "file": "Calisthenics-Cardio-Plyo-Functional/Bodyweight Standing Triangle Fly.mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
- },
- "bouncing-circle-draw": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Bouncing Circle Draw.mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
@@ -1434,11 +1444,6 @@
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
  },
- "circle-elbow-arm": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Circle Elbow Arm.mp4",
-  "tree": "HD 720p LOWEST FILE SIZE",
-  "fit": "card"
- },
  "criss-cross-arms-lift": {
   "file": "Calisthenics-Cardio-Plyo-Functional/Criss Cross Arms Lift.mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
@@ -1458,11 +1463,6 @@
   "file": "Calisthenics-Cardio-Plyo-Functional/Double Punch Front Leg Lift.mp4",
   "tree": "HD 720p LOWEST FILE SIZE",
   "fit": "card"
- },
- "low-box-quick-feet": {
-  "file": "Calisthenics-Cardio-Plyo-Functional/Low box quick feet.mp4",
-  "tree": "1200+ GREEN SCREEN VIDEOS",
-  "fit": "alpha"
  },
  "lying-on-side-arm-circle-warm-up": {
   "file": "Stretching - Mobility/Lying On Side Arm Circle Warm Up.mp4",

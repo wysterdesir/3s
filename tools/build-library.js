@@ -140,11 +140,12 @@ const EXCLUDE = [
   [/with partner\b|\bpartner\b/, 'needs a second person'],
   [/\bmulti.?hip\b/, 'multi-hip machine'],
   [/\bkipping\b/, 'kipping needs a bar and is a competition skill'],
+  [/\bheadstand\b|\bback lever\b|\bfront lever\b|\bplanche\b/, 'skill hold, not a conditioning interval'],
   [/\bchest dip\b/, 'dip station, mislabelled as a chair'],
   [/\bl.?sit hold\b/, 'parallettes, mislabelled as bodyweight'],
   [/\btennis\b|\bbasketball\b|\bgolf\b|\bbaseball\b|\bboxing bag\b/, 'sport skill, not a workout move'],
-  [/^walking$|^jogging$|\bgorilla walk\b|\bbriskly walking\b/, 'ambulatory, not an interval'],
-  [/\blying neck (curl|extension)\b/, 'neck training is out of scope'],
+  [/^walking\b|^jogging\b|\bgorilla walk\b|\bbriskly walking\b|\bwalking fast\b/, 'ambulatory, not an interval'],
+  [/\blying neck (curls?|extensions?)\b/, 'neck training is out of scope'],
   [/\bcelebratory\b/, 'not an exercise'],
 ];
 
@@ -212,6 +213,17 @@ const SWEAT_GROUPS = [
  * bodyweight push or shoulder move. Anything explosive or locomotive stays in
  * Sweat; the rest is read as strength. Cardio is tested first so a jumping squat
  * is not mistaken for a squat. */
+/* The Abdominals folder is 125 usable clips, all of which were going to Strength
+ * — which left Sweat drawing on the Calisthenics folder alone and starved its
+ * floor and core slots to eight moves each. A plank jack or a cross-body
+ * mountain climber is a conditioning interval as much as an ab exercise, so the
+ * dynamic bodyweight ones move across.
+ *
+ * Two conditions, both required: it must MOVE (a plank hold is strength, a plank
+ * jack is not) and it must be unloaded (a barbell sit-up is not a HIIT move). */
+const ABS_DYNAMIC = /climber|\bjacks?\b|knee (tuck|drive|raise)|bicycle|air bike|\bcrab\b|toe tap|toe touch|flutter|scissor|spider|\bmountain\b|heel touch|leg lift|criss ?cross|\btucks?\b|up and down|dynamic|\bpull ?through|reach through|\bwiper|\bswitch|\brun\b|\bsprint|\bskip/;
+const ABS_STATIC = /\bhold\b|\bplank on\b|^plank$|long lever|\bisometric|\bhollow\b|\bcopenhagen/;
+
 const CALI_CARDIO = /\bjump|\bhop\b|\bjacks?\b|\bskip|burpee|\brun\b|running|sprint|high knee|butt kick|skater|\bbound|plyo|\bpogo|\bleap|climber|shuffle|fast feet|\bpunch|\bjab\b|uppercut|shadow|\bmarch|\bsprawl|\bthrust\b|\bdrill\b|\bshuttle|\bagility|\bladder\b|\bknee strike|\bkick\b|\bbox\b|\bcrawl|spiderman|sit ?through|commando|inchworm|\bworm\b|mountain|plank.*(jack|up|down|tap|walk|reach|row|shoulder|twist|jump)|\bdrag\b/;
 const CALI_STRENGTH = /push ?up|\bdips?\b|\bplank|pull ?up|chin ?up|\bhold\b|wall sit|hollow|superman|\bbridge\b|crunch|sit ?up|leg raise|dead ?bug|bird ?dog|\bl.?sit\b|handstand|muscle ?up|\brow\b|calf raise|\bglute|hip thrust|\bpistol|\bsquat\b|\blunge\b|\bstep ?up|\bcarry|\braise\b|\bextension\b|\bcurl\b/;
 
@@ -512,7 +524,11 @@ function poolFor(item) {
   const base = FOLDER_POOL[item.folder];
   const low = ' ' + cleanName(item.file).toLowerCase() + ' ';
   if (base === 'strength') {
-    return !LOADED.some(([re]) => re.test(low)) && MOBILITY.test(low) ? 'stretch' : 'strength';
+    if (!LOADED.some(([re]) => re.test(low)) && MOBILITY.test(low)) return 'stretch';
+    if (item.folder === 'Abdominals' &&
+        !LOADED.some(([re]) => re.test(low)) &&
+        ABS_DYNAMIC.test(low) && !ABS_STATIC.test(low)) return 'sweat';
+    return 'strength';
   }
   if (base !== 'sweat') return base;
   if (CALI_CARDIO.test(low)) return 'sweat';
@@ -775,15 +791,20 @@ const QUOTA = {
   /* Sweat's heaviest single session asks for 12 impact slots and 6 floor, and a
    * move may repeat up to six times, so these sit well clear of demand. Setting
    * them to whatever supply happens to be makes the shortfall check circular —
-   * it would then only ever report "supply equals supply". */
-  sweat: { impact: 18, floor: 8, low: 12, upper: 12, core: 8 },
+   * it would then only ever report "supply equals supply".
+   *
+   * floor and core are deliberately high. Left lower, the group pass took the
+   * eight that existed and the pool top-up spent the remaining slots on `upper`,
+   * which the templates barely ask for — half the Sweat pool was upper while the
+   * groups under real pressure ran dry. */
+  sweat: { impact: 20, floor: 13, low: 12, upper: 12, core: 16 },
 };
 /* Travel is the binding case: wall and chair only. Every group must still fill a
  * session without repeating, so hold a floor of bodyweight options in each. */
 const TRAVEL_MIN = {
   stretch: { hips: 14, spine: 13, shoulders: 13, hams: 9, ankles: 5 },
   strength: { legs: 8, core: 8, push: 6, pull: 6, shoulders: 6, arms: 6, hinge: 6, carry: 6 },
-  sweat: { impact: 16, floor: 8, low: 8, upper: 6, core: 6 },
+  sweat: { impact: 16, floor: 10, low: 8, upper: 6, core: 12 },
 };
 
 /* Stretch exercises usually earn two or three group tags, so hitting the group
@@ -1087,6 +1108,31 @@ R('');
 conflicts.slice(0, 40).forEach((c) => R(`- ${c}`));
 if (conflicts.length > 40) R(`- …and ${conflicts.length - 40} more`);
 R('');
+
+/* --dump <folder> prints every surviving candidate from one source folder with
+ * the pool and groups it was given. The way to see what a classification change
+ * would actually reach, rather than guessing from the totals. */
+const DUMP = (() => {
+  const i = args.indexOf('--dump');
+  return i >= 0 && args[i + 1] ? args[i + 1].toLowerCase() : null;
+})();
+
+if (DUMP) {
+  const rows = deduped
+    .filter((c) => c.folder.toLowerCase().includes(DUMP))
+    .sort((a, b) => (a.pool + a.groups.join()) < (b.pool + b.groups.join()) ? -1 : 1);
+  console.log(`${rows.length} candidates from folders matching "${DUMP}" (after de-duplication)\n`);
+  const byGroup = {};
+  rows.forEach((c) => {
+    const k = c.pool + ' · ' + c.groups.join(',');
+    (byGroup[k] = byGroup[k] || []).push(c.name);
+  });
+  Object.keys(byGroup).sort().forEach((k) => {
+    console.log(`${k}  (${byGroup[k].length})`);
+    byGroup[k].forEach((n) => console.log('    ' + n));
+  });
+  process.exit(0);
+}
 
 if (DRY) {
   console.log(rep.join('\n'));

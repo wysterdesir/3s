@@ -1,7 +1,7 @@
 /* 3S — push the encoded clips to the R2 bucket.
  *
  *   wrangler login                     (once, in your own terminal)
- *   node tools/upload-media.js [--bucket 3s-media] [--dry-run] [--force]
+ *   node tools/upload-media.js [--bucket 3s-media] [--dry-run] [--force] [--prune]
  *
  * Uses wrangler's OAuth session rather than an S3 access key, so no long-lived
  * secret is stored on this machine or passed through a shell history.
@@ -22,6 +22,7 @@ const MEDIA = path.join(root, 'media');
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry-run');
 const FORCE = args.includes('--force');
+const PRUNE = args.includes('--prune');   // delete bucket objects the manifest dropped
 const BUCKET = (() => {
   const i = args.indexOf('--bucket');
   return i >= 0 && args[i + 1] ? args[i + 1] : '3s-media';
@@ -194,6 +195,37 @@ async function main() {
     failed.slice(0, 10).forEach((f) => console.error('  ' + f));
     console.error('\nFix the cause and re-run; completed uploads are skipped.');
     process.exit(1);
+  }
+
+  /* Clips the bucket still holds from an earlier library. They are unreachable —
+   * the manifest is the only index — but they accumulate on every regeneration
+   * and a reused name would serve stale content. wrangler cannot list a bucket,
+   * so the ledger is what makes this knowable: it records everything this
+   * machine ever sent, and anything in it that the manifest no longer references
+   * is an orphan.
+   *
+   * Reported by default and deleted only with --prune, because this is the one
+   * operation here that destroys something. */
+  const stale = Object.keys(sent).filter((f) => !clipFiles.includes(f));
+  if (stale.length) {
+    console.log(`\n${stale.length} clip(s) in the bucket are no longer in the manifest:`);
+    stale.slice(0, 8).forEach((f) => console.log('  ' + f));
+    if (stale.length > 8) console.log(`  …and ${stale.length - 8} more`);
+    if (!PRUNE) {
+      console.log('  (left in place — re-run with --prune to delete them)');
+    } else {
+      let pruned = 0;
+      for (const f of stale) {
+        try {
+          const [cmd, a] = wrangler(['r2', 'object', 'delete', `${BUCKET}/${f}`, '--remote']);
+          execFileSync(cmd, a, { stdio: 'ignore' });
+          delete sent[f];
+          pruned++;
+        } catch (e) { console.error(`  could not delete ${f}`); }
+      }
+      writeLedger(sent);
+      console.log(`  deleted ${pruned}`);
+    }
   }
 
   /* Last, and only once every clip it references is in place. */
