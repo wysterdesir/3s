@@ -175,7 +175,7 @@ function connect(url) {
   console.log('  exercise: ' + await evalJs(
     `document.getElementById('ex-name').textContent + ' | ' + document.getElementById('ex-cue').textContent +
      ' | clock ' + document.getElementById('clock').textContent +
-     ' | ring ' + getComputedStyle(document.getElementById('ring-fg')).strokeDashoffset`));
+     ' | meter ' + getComputedStyle(document.getElementById('tmeter-fill')).transform`));
 
   /* Confirm the figure is redrawing. Sample the limb geometry, not the spine:
    * plenty of exercises (punches, curls, raises) hold the torso still by
@@ -188,7 +188,7 @@ function connect(url) {
    * we wrote it, and any CSS rule naming the same property beats a presentation
    * attribute. That exact gap once let a frozen progress ring pass this check. */
   const ringOffset = () => evalJs(
-    `getComputedStyle(document.getElementById('ring-fg')).strokeDashoffset`);
+    `getComputedStyle(document.getElementById('tmeter-fill')).transform`);
 
   const seenLimbs = new Set(), seenRing = new Set();
   for (let i = 0; i < 6; i++) {
@@ -200,18 +200,11 @@ function connect(url) {
   else console.log(`  figure animating (${seenLimbs.size}/6 distinct limb poses)`);
 
   if (seenRing.size < 4) {
-    problems.push(`progress ring not advancing: only ${seenRing.size} distinct computed ` +
-      `stroke-dashoffset values in 6 samples (${[...seenRing].join(', ')})`);
+    problems.push(`interval meter not draining: only ${seenRing.size} distinct computed ` +
+      `transforms in 6 samples (${[...seenRing].join(', ')})`);
   } else {
-    console.log(`  ring draining (${seenRing.size}/6 distinct computed offsets)`);
+    console.log(`  meter draining (${seenRing.size}/6 distinct computed transforms)`);
   }
-
-  /* The dash pattern must also survive to the computed style, or the ring renders
-   * as a solid circle that never appears to empty. */
-  const dash = await evalJs(
-    `getComputedStyle(document.getElementById('ring-fg')).strokeDasharray`);
-  if (!dash || dash === 'none') problems.push(`ring stroke-dasharray did not apply (got "${dash}")`);
-  else console.log(`  ring dash pattern: ${dash}`);
 
   /* Sit through the first move to catch the change-position gap and confirm the
    * ring resets for the move that follows. */
@@ -232,9 +225,9 @@ function connect(url) {
     await sleep(6000);
     const after = await evalJs(
       `document.getElementById('ex-name').textContent + '|' +
-       getComputedStyle(document.getElementById('ring-fg')).strokeDashoffset`);
+       getComputedStyle(document.getElementById('tmeter-fill')).transform`);
     const [nm, off] = after.split('|');
-    console.log(`  next move: ${nm}, ring reset to offset ${off}`);
+    console.log(`  next move: ${nm}, meter reset to ${off}`);
     if (nm === 'Change Position') problems.push('still showing the transition 6s later');
   }
 
@@ -245,45 +238,46 @@ function connect(url) {
   const pausedShown = await evalJs(`document.getElementById('overlay').classList.contains('is-on')`);
   if (!pausedShown) problems.push('tap did not open the pause overlay');
 
-  /* Ring fit: map every joint of every keyframe of all 98 exercises through the
-   * live figure's screen transform and confirm none escapes the progress ring.
-   * Cheaper and far more exact than eyeballing screenshots pose by pose. */
+  /* Stage fit: map every joint of every keyframe of the whole library through the
+   * live figure's screen transform and confirm none escapes its container.
+   * Cheaper and far more exact than eyeballing screenshots pose by pose.
+   *
+   * This used to measure against the progress ring's radius. The ring is gone, so
+   * the bound is now the figure's own box — the check still earns its place,
+   * because a pose that reaches past its container clips against the exercise
+   * name rather than against a circle. */
   const ringFit = await evalJs(`(function(){
     var svg = document.querySelector('#figwrap .figure');
-    var ring = document.getElementById('ring-fg');
-    /* The circle element's own bounding box already reflects r=139 scaled to the
-     * element, so its half-width IS the screen radius (plus half a stroke). */
-    var rb = ring.getBoundingClientRect();
-    var cx = rb.x + rb.width / 2, cy = rb.y + rb.height / 2;
-    var stroke = parseFloat(getComputedStyle(ring).strokeWidth) || 0;
-    var R = rb.width / 2 - stroke / 2;
+    var b = document.getElementById('figwrap').getBoundingClientRect();
     var m = svg.getScreenCTM();
     var pt = svg.createSVGPoint();
     var joints = ['hip','shoulder','head','kneeL','kneeR','footL','footR','elbowL','elbowR','handL','handR'];
-    var worst = { d: 0 }, over = [];
+    var worst = { over: -1e9 }, over = [];
     S3.exercises.all.forEach(function(ex){
       ex.frames.forEach(function(fr, fi){
         var p = S3.rig.solve(fr);
         joints.forEach(function(k){
           pt.x = p[k][0]; pt.y = p[k][1];
           var s = pt.matrixTransform(m);
-          var pad = (k === 'head' ? p.headR : 0) * (m.a) + 4;   // head radius + stroke
-          var d = Math.hypot(s.x - cx, s.y - cy) + pad;
-          if (d > worst.d) worst = { d: d, id: ex.id, frame: fi, joint: k };
-          if (d > R) over.push(ex.id + ' f' + fi + ' ' + k);
+          var pad = (k === 'head' ? p.headR : 0) * m.a + 4;   // head radius + stroke
+          /* How far past the nearest edge this joint reaches; negative is inside. */
+          var d = Math.max(b.left - (s.x - pad), (s.x + pad) - b.right,
+                           b.top - (s.y - pad), (s.y + pad) - b.bottom);
+          if (d > worst.over) worst = { over: d, id: ex.id, frame: fi, joint: k };
+          if (d > 0) over.push(ex.id + ' f' + fi + ' ' + k);
         });
       });
     });
-    return { R: R, worst: worst, over: over.slice(0, 12), overCount: over.length,
-             total: S3.exercises.all.length };
+    return { box: Math.round(b.width) + 'x' + Math.round(b.height), worst: worst,
+             over: over.slice(0, 12), overCount: over.length, total: S3.exercises.all.length };
   })()`);
 
-  console.log(`  ring fit: ring radius ${ringFit.R.toFixed(1)}px, furthest joint ` +
-    `${ringFit.worst.d.toFixed(1)}px (${ringFit.worst.id} ${ringFit.worst.joint})`);
+  console.log(`  stage fit: figure box ${ringFit.box}, closest approach to an edge ` +
+    `${(-ringFit.worst.over).toFixed(1)}px of margin (${ringFit.worst.id} ${ringFit.worst.joint})`);
   if (ringFit.overCount) {
-    problems.push(`${ringFit.overCount} joints escape the ring, e.g. ${ringFit.over.join(', ')}`);
+    problems.push(`${ringFit.overCount} joints escape the figure box, e.g. ${ringFit.over.join(', ')}`);
   } else {
-    console.log(`  all ${ringFit.total} exercises fit inside the ring`);
+    console.log(`  all ${ringFit.total} exercises fit inside the figure box`);
   }
 
   const t1 = await evalJs(`document.getElementById('paused-t').textContent`);

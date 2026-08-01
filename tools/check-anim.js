@@ -65,7 +65,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     o.spine = g.querySelector('.fx-spine').getAttribute('d');
     o.limbs = Array.prototype.map.call(g.querySelectorAll('.fx-limb'), function(n){ return n.getAttribute('points'); }).join('|');
     o.head = g.querySelector('.fx-head').getAttribute('cx') + ',' + g.querySelector('.fx-head').getAttribute('cy');
-    o.ring = document.getElementById('ring-fg').getAttribute('stroke-dashoffset');
+    o.meter = getComputedStyle(document.getElementById('tmeter-fill')).transform;
     return o;
   })()`);
 
@@ -78,11 +78,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   console.log(`  distinct limb geometries : ${uniq('limbs')} / 8`);
   console.log(`  distinct spine paths     : ${uniq('spine')} / 8`);
   console.log(`  distinct head positions  : ${uniq('head')} / 8`);
-  console.log(`  distinct ring offsets    : ${uniq('ring')} / 8`);
+  console.log(`  distinct meter transforms: ${uniq('meter')} / 8`);
   console.log(`  clock: ${frames[0].clock} -> ${frames[frames.length - 1].clock}`);
 
-  const ok = uniq('limbs') >= 5 && uniq('ring') >= 5;
-  console.log(ok ? '\nfigure and ring are animating' : '\nFAIL: figure is static');
+  const ok = uniq('limbs') >= 5 && uniq('meter') >= 5;
+  console.log(ok ? '\nfigure and interval meter are animating' : '\nFAIL: figure is static');
 
   ws.close(); proc.kill();
   process.exit(ok ? 0 : 1);

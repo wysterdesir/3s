@@ -173,24 +173,29 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
   min-height: 0; margin: 8px 0;
 }
 
-.ring { position: absolute; width: min(94vw, 74vh, 430px); height: min(94vw, 74vh, 430px); transform: rotate(-90deg); }
-.ring circle { fill: none; stroke-width: 3.4; stroke-linecap: round; }
-.ring-bg { stroke: #1b1f27; }
-/* Deliberately no stroke-dasharray/dashoffset here: a CSS declaration outranks
- * an SVG presentation attribute, so declaring them would silently override the
- * per-frame updates app.js makes. It sets them as inline style instead. */
-.ring-fg {
-  stroke: var(--accent);
-  transition: stroke .3s ease;
+/* Interval countdown. A ring around the figure framed it like a portrait and
+ * fought the clip for the same space; this runs down the left edge instead and
+ * leaves the middle of the screen entirely to the exercise. It empties downward
+ * like a draining tube, so a glance reads "how much is left" without numbers. */
+.tmeter {
+  /* Sits in the screen's own left padding, not in the stage's content box, so the
+   * clip stays centred on the SCREEN rather than centred in what is left over
+   * beside the meter. Off-centring the exercise to make room for a 6px bar would
+   * trade the more noticeable problem for the less noticeable one. */
+  position: absolute; left: calc(6px - var(--pad)); top: 4%; bottom: 4%; width: 6px;
+  border-radius: 999px; background: #171b23; overflow: hidden; z-index: 3;
+}
+.tmeter-fill {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 100%; border-radius: 999px; background: var(--accent);
+  transform-origin: bottom;
+  transition: background .3s ease;
 }
 
 .figwrap {
   position: relative; z-index: 2;
-  /* Just inside .ring below — the ratio between the ring circle (r=139 of a 300
-   * viewBox) and the ring element, minus a couple of percent so the widest pose
-   * clears the stroke rather than grazing it. Verified by the ring-fit check in
-   * tools/shoot.js, which wants a few px of margin, not a tie. */
-  width: min(85vw, 66vh, 386px); height: min(85vw, 66vh, 386px);
+  /* No longer boxed inside a ring, so the clip can take the room it needs. */
+  width: min(96vw, 78vh, 460px); height: min(96vw, 78vh, 460px);
   display: flex; align-items: center; justify-content: center;
 }
 .figure { width: 100%; height: 100%; overflow: visible; }
@@ -199,11 +204,17 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
  * drawn figure remains the default and the fallback. Keyed clips ('alpha') sit
  * straight on the dark background; clips that keep their own light background
  * ('card') get a panel so they don't read as a floating rectangle. */
-/* Inset rather than filling .figwrap: the drawn figure is fitted to the circle
- * inscribed in that square, but a video fills the square's corners, so an
- * uninset clip pokes through the progress ring. */
+/* Fills .figwrap now. The clip used to be inset so its corners could not poke
+ * through the progress ring; with the ring gone there is nothing to clear, and
+ * the inset was only costing the figure size on a phone. */
 .clip {
-  position: absolute; inset: 7%;
+  /* Width and height must be explicit. A replaced element sized `auto` ignores
+   * the opposite inset and renders at its intrinsic size — 480px — so the clip
+   * was laying itself out 480px wide from the left edge, hanging off the right
+   * of a phone screen and down over the exercise name. The drawn figure is an
+   * SVG at 100%/100%, which is why nothing looked wrong until clips shipped. */
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
   object-fit: contain;
   display: none;
   background: transparent;

@@ -116,14 +116,15 @@
   audio.on = S.sound;
   audio.voice = S.voice;
 
-  /* Inline style, not setAttribute: presentation attributes lose to any CSS rule
-   * that names the same property, which would freeze the ring silently. */
-  var RING_C = 2 * Math.PI * 139;
-  var ringFg = $('ring-fg');
-  ringFg.style.strokeDasharray = RING_C.toFixed(1);
+  /* Interval countdown, drawn as a draining column at the left edge. `frac` runs
+   * 0 -> 1 across the interval, so the fill is what remains. Scaling beats
+   * animating height: it stays on the compositor and cannot reflow the stage
+   * sixty times a second. */
+  var meterFill = $('tmeter-fill');
 
   function setRing(frac) {
-    ringFg.style.strokeDashoffset = (RING_C * Math.max(0, Math.min(1, frac))).toFixed(1);
+    var left = 1 - Math.max(0, Math.min(1, frac));
+    meterFill.style.transform = 'scaleY(' + left.toFixed(4) + ')';
   }
 
   var run = null;    // { plan, sessions, idx, single }
